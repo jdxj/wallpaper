@@ -16,8 +16,8 @@ func main() {
 	oc.Write("data")
 	end := time.Now()
 
-	fmt.Printf("start: %s\n", start)
-	fmt.Printf("end: %s\n", end)
+	fmt.Printf("start:  %s\n", start)
+	fmt.Printf("end:    %s\n", end)
 	fmt.Printf("expend: %s", end.Sub(start))
 
 }
