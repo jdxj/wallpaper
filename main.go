@@ -1,23 +1,7 @@
 package main
 
-import (
-	"fmt"
-	"time"
-
-	"github.com/jdxj/wallpaper/octodex"
-)
+import "github.com/jdxj/wallpaper/polayoutu"
 
 func main() {
-	start := time.Now()
-	oc := octodex.NewCrawler()
-	go oc.PushURL()
-	go oc.Download()
-
-	oc.Write("data")
-	end := time.Now()
-
-	fmt.Printf("start:  %s\n", start)
-	fmt.Printf("end:    %s\n", end)
-	fmt.Printf("expend: %s", end.Sub(start))
-
+	polayoutu.Run()
 }

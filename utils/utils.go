@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bufio"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -25,5 +27,21 @@ func WriteToFile(path string, data []byte) error {
 	defer file.Close()
 
 	_, err = file.Write(data)
+	return err
+}
+
+func WriteToFileReadCloser(path string, r io.ReadCloser) error {
+	defer r.Close()
+
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	bufW := bufio.NewWriter(file)
+	defer bufW.Flush()
+
+	_, err = bufW.ReadFrom(r)
 	return err
 }

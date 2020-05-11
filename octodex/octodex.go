@@ -6,11 +6,26 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jdxj/wallpaper/client"
 	"github.com/jdxj/wallpaper/utils"
 )
+
+func Run() {
+	start := time.Now()
+	oc := NewCrawler()
+	go oc.PushURL()
+	go oc.Download()
+
+	oc.Write("data")
+	end := time.Now()
+
+	fmt.Printf("start:  %s\n", start)
+	fmt.Printf("end:    %s\n", end)
+	fmt.Printf("expend: %s", end.Sub(start))
+}
 
 const mainPage = "https://octodex.github.com"
 const downloadPrefix = mainPage
