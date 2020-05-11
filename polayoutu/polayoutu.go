@@ -2,6 +2,7 @@ package polayoutu
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -15,9 +16,16 @@ import (
 )
 
 func Run() {
+	fs := flag.NewFlagSet("polayoutu", flag.ExitOnError)
+	kind := fs.String("kind", "thumb", "specified sharpness")
+	edition := fs.Int("edition", 1, "get the specified edition")
+	if err := fs.Parse(os.Args[2:]); err != nil {
+		panic(err)
+	}
+
 	//pc := NewCrawler(Thumb)
-	pc := NewCrawler(FullRes)
-	go pc.PushURL(182)
+	pc := NewCrawler(*kind)
+	go pc.PushURL(*edition)
 	go pc.Download()
 	pc.WriteToFile("data")
 }
@@ -141,6 +149,8 @@ func (pc *Crawler) WriteToFile(path string) {
 			defer wg.Done()
 
 			for photoFile := range pc.photoQueue {
+				fmt.Printf("writing file: %s\n", photoFile.fileName)
+
 				dir := path + "/" + photoFile.fileName
 				err := utils.WriteToFileReadCloser(dir, photoFile.data)
 				if err != nil {
