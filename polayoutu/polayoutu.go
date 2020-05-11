@@ -17,13 +17,12 @@ import (
 
 func Run() {
 	fs := flag.NewFlagSet("polayoutu", flag.ExitOnError)
-	kind := fs.String("kind", "thumb", "specified sharpness")
+	kind := fs.String("kind", "thumb", "specified sharpness. you can use [thumb|full_res]")
 	edition := fs.Int("edition", 1, "get the specified edition")
 	if err := fs.Parse(os.Args[2:]); err != nil {
 		panic(err)
 	}
 
-	//pc := NewCrawler(Thumb)
 	pc := NewCrawler(*kind)
 	go pc.PushURL(*edition)
 	go pc.Download()

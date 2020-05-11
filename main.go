@@ -13,21 +13,26 @@ var subCmd = map[string]func(){
 	"polayoutu": polayoutu.Run,
 }
 
-var usableCmd = `usable cmd:
-	octodex
-	polayoutu
-`
+func Usage() {
+	fmt.Fprintf(os.Stderr, `Usage of wallpaper:
+    wallpaper <command> [arguments]
+
+Command:
+    octodex
+    polayoutu
+`)
+}
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Print(usableCmd)
+		Usage()
 		return
 	}
 
 	cmd := os.Args[1]
 	f, ok := subCmd[cmd]
 	if !ok {
-		fmt.Printf("not found subcmd: %s\n", cmd)
+		Usage()
 		return
 	}
 	f()
