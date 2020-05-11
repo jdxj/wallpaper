@@ -13,7 +13,7 @@ func main() {
 	go oc.PushURL()
 	go oc.Download()
 
-	oc.Write("data2")
+	oc.Write("data")
 	end := time.Now()
 
 	fmt.Printf("start: %s\n", start)

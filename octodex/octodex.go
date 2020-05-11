@@ -3,7 +3,9 @@ package octodex
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jdxj/wallpaper/client"
@@ -16,14 +18,16 @@ const cacheLimit = 100
 
 func NewCrawler() *Crawler {
 	return &Crawler{
+		cpuCount:  runtime.NumCPU(),
 		urlQueue:  make(chan string, cacheLimit),
 		dataQueue: make(chan *myFile, cacheLimit),
 	}
 }
 
 type Crawler struct {
-	urlQueue chan string
+	cpuCount int
 
+	urlQueue  chan string
 	dataQueue chan *myFile
 }
 
@@ -57,18 +61,28 @@ func (oc *Crawler) PushURL() {
 }
 
 func (oc *Crawler) Download() {
-	// 访问远程
-	for url := range oc.urlQueue {
-		fmt.Printf("downloading [%s]\n", url)
+	// 多协程下载
+	wg := &sync.WaitGroup{}
+	for i := 0; i < oc.cpuCount; i++ {
+		wg.Add(1)
 
-		myFile, err := newMyFile(url)
-		if err != nil {
-			fmt.Printf("%s\n", err)
-			continue
-		}
-		oc.dataQueue <- myFile
+		// 访问远程
+		go func() {
+			defer wg.Done()
+
+			for url := range oc.urlQueue {
+				fmt.Printf("downloading [%s]\n", url)
+
+				myFile, err := newMyFile(url)
+				if err != nil {
+					fmt.Printf("%s\n", err)
+					continue
+				}
+				oc.dataQueue <- myFile
+			}
+		}()
 	}
-
+	wg.Wait()
 	close(oc.dataQueue)
 }
 
@@ -78,15 +92,27 @@ func (oc *Crawler) Write(path string) {
 		panic(err)
 	}
 
-	for myFile := range oc.dataQueue {
-		fmt.Printf("writing     [%s]\n", myFile.fileName)
+	// 多协程写
+	wg := &sync.WaitGroup{}
+	for i := 0; i < oc.cpuCount; i++ {
+		wg.Add(1)
 
-		err := utils.WriteToFile(path+"/"+myFile.fileName, myFile.data)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
+		go func() {
+			defer wg.Done()
+
+			for myFile := range oc.dataQueue {
+				fmt.Printf("writing     [%s]\n", myFile.fileName)
+
+				err := utils.WriteToFile(path+"/"+myFile.fileName, myFile.data)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+			}
+		}()
 	}
+	wg.Wait()
+	fmt.Println("all write finish")
 }
 
 type myFile struct {
