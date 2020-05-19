@@ -4,15 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"os"
-	"runtime"
-	"strings"
-	"sync"
-
-	"github.com/jdxj/wallpaper/utils"
 
 	"github.com/jdxj/wallpaper/client"
+	"github.com/jdxj/wallpaper/download"
+	"github.com/jdxj/wallpaper/utils"
 )
 
 func Run() {
@@ -24,9 +20,7 @@ func Run() {
 	}
 
 	pc := NewCrawler(*kind)
-	go pc.PushURL(*edition)
-	go pc.Download()
-	pc.WriteToFile("data")
+	pc.PushURL(*edition)
 }
 
 const (
@@ -35,24 +29,20 @@ const (
 )
 
 const (
-	cacheLimit = 20
-	mainPage   = "https://www.polayoutu.com/collections/get_entries_by_collection_id/%d?{}"
+	mainPage = "https://www.polayoutu.com/collections/get_entries_by_collection_id/%d?{}"
+	savePath = "data"
 )
 
 func NewCrawler(kind string) *Crawler {
 	pc := &Crawler{
-		cpuNum:     runtime.NumCPU(),
-		urlQueue:   make(chan *Photo, cacheLimit),
-		photoQueue: make(chan *photoFile, cacheLimit),
+		downloader: download.NewDownloader(),
 		kind:       kind,
 	}
 	return pc
 }
 
 type Crawler struct {
-	cpuNum     int
-	urlQueue   chan *Photo
-	photoQueue chan *photoFile
+	downloader *download.Downloader
 
 	kind string
 }
@@ -61,109 +51,49 @@ func (pc *Crawler) PushURL(edition int) {
 	url := fmt.Sprintf(mainPage, edition)
 	resp, err := client.Get(url)
 	if err != nil {
-		panic(err)
+		fmt.Printf("PushURL-Get err: %s\n", err)
+		return
 	}
 	defer resp.Body.Close()
 
 	decoder := json.NewDecoder(resp.Body)
 	rJson := &ResponseJson{}
 	if err := decoder.Decode(rJson); err != nil {
-		panic(err)
+		fmt.Printf("PushURL-Decode err: %s\n", err)
+		return
 	}
 
 	photos := make([]*Photo, 0)
 	if err := json.Unmarshal(rJson.Data, &photos); err != nil {
-		panic(err)
+		fmt.Printf("PushURL-Unmarshal err: %s\n", err)
+		return
 	}
 
 	for _, photo := range photos {
-		pc.urlQueue <- photo
-	}
-	close(pc.urlQueue)
-}
+		var url string
+		switch pc.kind {
+		case FullRes:
+			url = photo.FullRes
 
-func (pc *Crawler) Download() {
-	wg := &sync.WaitGroup{}
-	for i := 0; i < pc.cpuNum; i++ {
-		wg.Add(1)
+		case Thumb:
+			url = photo.Thumb
 
-		go func() {
-			defer wg.Done()
+		default:
+			fmt.Printf("no this kind: %s\n", pc.kind)
+			return
+		}
 
-			for photo := range pc.urlQueue {
-				pf, err := newPhotoFile(photo, pc.kind)
-				if err != nil {
-					fmt.Printf("%s\n", err)
-					continue
-				}
+		suffix := utils.TruncateFileName(url)
+		fileName := fmt.Sprintf("%d_%d_%d_%s",
+			photo.CollectionID, photo.ID, photo.UserID, suffix)
 
-				pc.photoQueue <- pf
-			}
-		}()
-	}
-	wg.Wait()
-	close(pc.photoQueue)
-}
-
-func newPhotoFile(photo *Photo, kind string) (*photoFile, error) {
-	var url string
-	switch kind {
-	case FullRes:
-		url = photo.FullRes
-
-	case Thumb:
-		url = photo.Thumb
-
-	default:
-		return nil, fmt.Errorf("no this kind: %s", kind)
+		reqTask := &download.RequestTask{
+			Path:     savePath,
+			FileName: fileName,
+			URL:      url,
+		}
+		pc.downloader.PushTask(reqTask)
 	}
 
-	resp, err := client.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	index := strings.LastIndex(url, "/")
-	suffix := url[index+1:]
-	fileName := fmt.Sprintf("%d_%d_%d_%s", photo.CollectionID, photo.ID, photo.UserID, suffix)
-	pf := &photoFile{
-		property: photo,
-		fileName: fileName,
-		data:     resp.Body,
-	}
-	return pf, nil
-}
-
-func (pc *Crawler) WriteToFile(path string) {
-	// 保存到本地
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		panic(err)
-	}
-
-	wg := &sync.WaitGroup{}
-	for i := 0; i < pc.cpuNum; i++ {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
-			for photoFile := range pc.photoQueue {
-				fmt.Printf("writing file: %s\n", photoFile.fileName)
-
-				dir := path + "/" + photoFile.fileName
-				err := utils.WriteToFileReadCloser(dir, photoFile.data)
-				if err != nil {
-					fmt.Printf("%s\n", err)
-					continue
-				}
-			}
-		}()
-	}
-	wg.Wait()
-}
-
-type photoFile struct {
-	property *Photo
-	fileName string
-	data     io.ReadCloser
+	pc.downloader.WaitSave()
 }

@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/jdxj/wallpaper/client"
 )
@@ -30,7 +31,7 @@ func WriteToFile(path string, data []byte) error {
 	return err
 }
 
-// WriteToFileReadCloser 读取 r 中所有数据到文件,
+// WriteFromReadCloser 读取 r 中所有数据到文件,
 // 其必须调用 r.Close() 方法.
 func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 	defer r.Close()
@@ -50,4 +51,10 @@ func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 
 	_, err = bufW.ReadFrom(r)
 	return err
+}
+
+// TruncateFileName 用于将 url 中最后一个 "/" 之后的部分截取出来作为文件名.
+func TruncateFileName(url string) string {
+	idx := strings.LastIndex(url, "/")
+	return url[idx+1:]
 }

@@ -2,13 +2,13 @@ package octodex
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/jdxj/wallpaper/download"
-
 	"github.com/PuerkitoBio/goquery"
+
 	"github.com/jdxj/wallpaper/client"
+	"github.com/jdxj/wallpaper/download"
+	"github.com/jdxj/wallpaper/utils"
 )
 
 func Run() {
@@ -63,9 +63,7 @@ func (oc *Crawler) PushURL() {
 			return
 		}
 
-		idx := strings.LastIndex(src, "/")
-		fileName := src[idx+1:]
-
+		fileName := utils.TruncateFileName(src)
 		reqTask := &download.RequestTask{
 			Path:     savePath,
 			FileName: fileName,
