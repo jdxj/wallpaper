@@ -1,6 +1,7 @@
 package client
 
 import (
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 )
@@ -23,4 +24,12 @@ func Get(url string) (*http.Response, error) {
 	req.Header.Set("User-Agent", userAgent)
 
 	return client.Do(req)
+}
+
+func GetReadCloser(url string) (io.ReadCloser, error) {
+	resp, err := Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }

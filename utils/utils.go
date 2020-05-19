@@ -30,10 +30,16 @@ func WriteToFile(path string, data []byte) error {
 	return err
 }
 
-func WriteToFileReadCloser(path string, r io.ReadCloser) error {
+// WriteToFileReadCloser 读取 r 中所有数据到文件,
+// 其必须调用 r.Close() 方法.
+func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 	defer r.Close()
 
-	file, err := os.Create(path)
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		return err
+	}
+
+	file, err := os.Create(path + "/" + fileName)
 	if err != nil {
 		return err
 	}
