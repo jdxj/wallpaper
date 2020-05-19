@@ -115,7 +115,7 @@ func (d *Downloader) saveData() {
 		path := saveTask.reqTask.Path
 		fileName := saveTask.reqTask.FileName
 
-		fmt.Printf("saving: %s\n", fileName)
+		fmt.Printf("saveing: %s\n", fileName)
 		err := utils.WriteFromReadCloser(path, fileName, saveTask.data)
 		if err != nil {
 			fmt.Printf("saveData-WriteFromReadCloser err: %s\n",
@@ -128,6 +128,7 @@ func (d *Downloader) saveData() {
 // WaitSave 是阻塞的来等待所有数据保存到磁盘.
 // 注意: WaitSave 必须与 PushTask 在同一 goroutine,
 //     否则可能会出现 "panic: send on closed channel" 恐慌.
+// 注意: WaitSave 必须被调用, 否则只会保存部分数据.
 func (d *Downloader) WaitSave() {
 	close(d.stop)
 
