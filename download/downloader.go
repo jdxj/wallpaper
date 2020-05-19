@@ -65,6 +65,7 @@ func (d *Downloader) PushTask(requestTask *RequestTask) error {
 	default:
 	}
 
+	fmt.Printf("pushing: %s\n", requestTask.FileName)
 	d.reqTasks <- requestTask
 	return nil
 }
@@ -92,6 +93,7 @@ func (d *Downloader) processingTasks() {
 // getData 使用提供的 url 来获取 ReadCloser.
 func (d *Downloader) getData() {
 	for reqTask := range d.reqTasks {
+		fmt.Printf("getting: %s\n", reqTask.FileName)
 		readCloser, err := client.GetReadCloser(reqTask.URL)
 		if err != nil {
 			fmt.Printf("getData-GetReadCloser err: %s\n",
@@ -113,6 +115,7 @@ func (d *Downloader) saveData() {
 		path := saveTask.reqTask.Path
 		fileName := saveTask.reqTask.FileName
 
+		fmt.Printf("saving: %s\n", fileName)
 		err := utils.WriteFromReadCloser(path, fileName, saveTask.data)
 		if err != nil {
 			fmt.Printf("saveData-WriteFromReadCloser err: %s\n",
