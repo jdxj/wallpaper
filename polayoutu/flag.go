@@ -1,6 +1,8 @@
 package polayoutu
 
-import "flag"
+import (
+	"flag"
+)
 
 const (
 	flagName = "polayoutu"

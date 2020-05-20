@@ -36,6 +36,9 @@ Command:
     octodex
     polayoutu
     darenyou
+
+Example:
+    wallpaper polayoutu -h
 `)
 }
 
@@ -56,7 +59,9 @@ func RegisterCmdHandler(flagName string, h Handler) {
 func HandleCmd(flagName string) {
 	h, ok := cmdHandlerSet[flagName]
 	if !ok {
-		fmt.Fprintf(os.Stderr, "not found this flag: %s\n", flagName)
+		_, _ = fmt.Fprintf(os.Stderr, "wrong subcommand: %s\n",
+			flagName)
+
 		Usage()
 		return
 	}
