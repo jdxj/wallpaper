@@ -3,7 +3,10 @@ package download
 import (
 	"fmt"
 	"io"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	"github.com/jdxj/wallpaper/client"
 	"github.com/jdxj/wallpaper/utils"
@@ -37,10 +40,13 @@ func NewDownloaderSize(requestLimit, saveLimit int) *Downloader {
 		reqTasks:  make(chan *RequestTask, requestLimit),
 		saveTasks: make(chan *saveTask, saveLimit),
 		stop:      make(chan int),
+		giveUp:    make(chan int),
 		reqWG:     &sync.WaitGroup{},
 		saveWG:    &sync.WaitGroup{},
 	}
+
 	d.processingTasks()
+	d.GiveUp()
 	return d
 }
 
@@ -52,7 +58,8 @@ type Downloader struct {
 	saveTasks chan *saveTask
 	saveWG    *sync.WaitGroup
 
-	stop chan int
+	stop   chan int
+	giveUp chan int
 }
 
 // PushTask 将 RequestTask 存入缓存中.
@@ -60,6 +67,9 @@ func (d *Downloader) PushTask(requestTask *RequestTask) error {
 	select {
 	case <-d.stop:
 		return fmt.Errorf("downloader already closed push task channel")
+
+	case <-d.giveUp:
+		return fmt.Errorf("downloader is giving up on push task channel")
 
 	default:
 	}
@@ -92,6 +102,14 @@ func (d *Downloader) processingTasks() {
 // getData 使用提供的 url 来获取 ReadCloser.
 func (d *Downloader) getData() {
 	for reqTask := range d.reqTasks {
+		select {
+		case <-d.giveUp:
+			fmt.Printf("getData is giving up on: %#v\n", *reqTask)
+			continue
+
+		default:
+		}
+
 		fmt.Printf("getting: %s\n", reqTask.FileName)
 		readCloser, err := client.GetReadCloser(reqTask.URL)
 		if err != nil {
@@ -111,6 +129,16 @@ func (d *Downloader) getData() {
 // saveData 通过读取 ReadCloser 将数据保存到磁盘.
 func (d *Downloader) saveData() {
 	for saveTask := range d.saveTasks {
+		select {
+		case <-d.giveUp:
+			fmt.Printf("saveData is giving up on: %s\n",
+				saveTask.reqTask.FileName)
+			saveTask.data.Close()
+			continue
+
+		default:
+		}
+
 		path := saveTask.reqTask.Path
 		fileName := saveTask.reqTask.FileName
 
@@ -136,4 +164,18 @@ func (d *Downloader) WaitSave() {
 
 	close(d.saveTasks)
 	d.saveWG.Wait()
+}
+
+// giveUp 接收中断信号, 放弃缓存立即结束下载.
+func (d *Downloader) GiveUp() {
+	go func() {
+		signals := make(chan os.Signal, 2)
+		signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
+
+		select {
+		case <-signals:
+			fmt.Printf("downloader receive giveup signal\n")
+			close(d.giveUp)
+		}
+	}()
 }
