@@ -7,33 +7,21 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/jdxj/wallpaper/utils"
 
 	"github.com/jdxj/wallpaper/client"
 	"github.com/jdxj/wallpaper/download"
+	"github.com/jdxj/wallpaper/utils"
 )
 
 const (
 	//mainPage = "https://darenyouphoto.com/_api/v0/site/youdaren/projects"
 	mainPage = "https://darenyouphoto.com/_api/v0/site/youdaren/projects?type=page&offset=0&limit=40"
-
-	savePath = "data"
-
-	// project
-	Chaos        = "chaos"
-	Commissioned = "commissioned"
-
-	// size
-	Src       = "src"
-	SrcO      = "src_o"
-	DataHiRes = "data-hi-res" // goquery 无法解析
 )
 
-func NewCrawler(project, size string) *Crawler {
+func NewCrawler(cp *CmdParser) *Crawler {
 	c := &Crawler{
 		downloader: download.NewDownloader(),
-		project:    project,
-		size:       size,
+		cmdParser:  cp,
 	}
 	return c
 }
@@ -41,8 +29,7 @@ func NewCrawler(project, size string) *Crawler {
 type Crawler struct {
 	downloader *download.Downloader
 
-	project string
-	size    string
+	cmdParser *CmdParser
 }
 
 func (c *Crawler) PushURL() {
@@ -62,7 +49,7 @@ func (c *Crawler) PushURL() {
 	for _, v := range urls {
 		fileName := utils.TruncateFileName(v)
 		reqTask := &download.RequestTask{
-			Path:     savePath,
+			Path:     c.cmdParser.path,
 			FileName: fileName,
 			URL:      v,
 		}
@@ -94,7 +81,7 @@ func (c *Crawler) parseJson() (*Project, error) {
 	}
 
 	var project *Project
-	switch c.project {
+	switch c.cmdParser.project {
 	case Chaos:
 		project = projects[0]
 
@@ -103,7 +90,7 @@ func (c *Crawler) parseJson() (*Project, error) {
 
 	default:
 		return nil, fmt.Errorf("don't have this project: %s",
-			c.project)
+			c.cmdParser.project)
 	}
 	return project, nil
 }
@@ -116,7 +103,7 @@ func (c *Crawler) parseURL(project *Project) ([]string, error) {
 	}
 
 	var selector string
-	switch c.size {
+	switch c.cmdParser.size {
 	case Src:
 		selector = Src
 
@@ -127,7 +114,7 @@ func (c *Crawler) parseURL(project *Project) ([]string, error) {
 		selector = DataHiRes
 
 	default:
-		return nil, fmt.Errorf("no this size: %s", c.size)
+		return nil, fmt.Errorf("no this size: %s", c.cmdParser.size)
 	}
 
 	var result []string

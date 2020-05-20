@@ -1,39 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/jdxj/wallpaper/octodex"
-	"github.com/jdxj/wallpaper/polayoutu"
+	"github.com/jdxj/wallpaper/cmd"
 )
-
-var subCmd = map[string]func(){
-	"octodex":   octodex.Run,
-	"polayoutu": polayoutu.Run,
-}
-
-func Usage() {
-	fmt.Fprintf(os.Stderr, `Usage of wallpaper:
-    wallpaper <command> [arguments]
-
-Command:
-    octodex
-    polayoutu
-`)
-}
 
 func main() {
 	if len(os.Args) < 2 {
-		Usage()
+		cmd.Usage()
 		return
 	}
 
-	cmd := os.Args[1]
-	f, ok := subCmd[cmd]
-	if !ok {
-		Usage()
-		return
-	}
-	f()
+	cmd.HandleCmd(os.Args[1])
 }
