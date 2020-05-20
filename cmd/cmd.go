@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jdxj/wallpaper/polayoutu"
+
+	"github.com/jdxj/wallpaper/octodex"
+
 	"github.com/jdxj/wallpaper/darenyou"
 )
 
@@ -15,6 +19,8 @@ func init() {
 	cmdHandlerSet = make(map[string]Handler)
 
 	RegisterCmdHandler(darenyou.NewCmdParser())
+	RegisterCmdHandler(octodex.NewCmdParser())
+	RegisterCmdHandler(polayoutu.NewCmdParser())
 }
 
 type Handler interface {

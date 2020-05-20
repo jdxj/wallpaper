@@ -56,7 +56,6 @@ type Downloader struct {
 }
 
 // PushTask 将 RequestTask 存入缓存中.
-// PushTask 以阻塞的方式来避免过多创建 goroutine.
 func (d *Downloader) PushTask(requestTask *RequestTask) error {
 	select {
 	case <-d.stop:

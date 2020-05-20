@@ -30,14 +30,14 @@ type CmdParser struct {
 	path    string
 }
 
-func (cp *CmdParser) ParseCmd(param []string) error {
+func (cp *CmdParser) ParseCmd(params []string) error {
 	flagSet := flag.NewFlagSet(flagName, flag.ExitOnError)
 
-	flagSet.StringVar(&cp.project, "project", Chaos, "project specifies a different album. you can choose are [chaos | commissioned]")
-	flagSet.StringVar(&cp.size, "size", Src, "size specifies the resolution of the image to be downloaded. you can choose [src | src_o | data-hi-res]")
+	flagSet.StringVar(&cp.project, "project", Chaos, "project specifies a different album. you can choose are [chaos | commissioned].")
+	flagSet.StringVar(&cp.size, "size", Src, "size specifies the resolution of the image to be downloaded. you can choose [src | src_o | data-hi-res].")
 	flagSet.StringVar(&cp.path, "path", defaultSavePath, "path specifies the storage path of the picture.")
 
-	return flagSet.Parse(param)
+	return flagSet.Parse(params)
 }
 
 func (cp *CmdParser) Run() {

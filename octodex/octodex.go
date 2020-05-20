@@ -2,7 +2,6 @@ package octodex
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -11,33 +10,23 @@ import (
 	"github.com/jdxj/wallpaper/utils"
 )
 
-func Run() {
-	start := time.Now()
-	oc := NewCrawler()
-	oc.PushURL()
-	end := time.Now()
-
-	fmt.Printf("start:  %s\n", start)
-	fmt.Printf("end:    %s\n", end)
-	fmt.Printf("expend: %s\n", end.Sub(start))
-}
-
 const (
 	mainPage       = "https://octodex.github.com"
 	downloadPrefix = mainPage
-	cacheLimit     = 100
-	savePath       = "data"
 )
 
-func NewCrawler() *Crawler {
+func NewCrawler(cp *CmdParser) *Crawler {
 	c := &Crawler{
 		downloader: download.NewDownloader(),
+		cmdParser:  cp,
 	}
 	return c
 }
 
 type Crawler struct {
 	downloader *download.Downloader
+
+	cmdParser *CmdParser
 }
 
 // PushURL 不断地获取下载链接
@@ -65,7 +54,7 @@ func (oc *Crawler) PushURL() {
 
 		fileName := utils.TruncateFileName(src)
 		reqTask := &download.RequestTask{
-			Path:     savePath,
+			Path:     oc.cmdParser.path,
 			FileName: fileName,
 			URL:      downloadPrefix + "/" + src,
 		}
