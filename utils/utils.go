@@ -5,7 +5,9 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/jdxj/wallpaper/client"
 )
@@ -57,4 +59,20 @@ func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 func TruncateFileName(url string) string {
 	idx := strings.LastIndex(url, "/")
 	return url[idx+1:]
+}
+
+func BoolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+// ReceiveInterrupt 用于接收中断信号, 其必须在新 goroutine 中.
+func ReceiveInterrupt() {
+	signals := make(chan os.Signal, 2)
+	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
+	select {
+	case <-signals:
+	}
 }

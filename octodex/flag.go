@@ -4,7 +4,7 @@ import "flag"
 
 const (
 	flagName        = "octodex"
-	defaultSavePaht = "data"
+	defaultSavePath = "data"
 )
 
 func NewCmdParser() (string, *CmdParser) {
@@ -18,8 +18,7 @@ type CmdParser struct {
 
 func (cp *CmdParser) ParseCmd(params []string) error {
 	flagSet := flag.NewFlagSet(flagName, flag.ExitOnError)
-
-	flagSet.StringVar(&cp.path, "path", defaultSavePaht, "path specifies the storage path of the picture.")
+	flagSet.StringVar(&cp.path, "path", defaultSavePath, "path specifies the storage path of the picture.")
 
 	return flagSet.Parse(params)
 }

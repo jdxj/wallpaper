@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jdxj/wallpaper/polayoutu"
-
-	"github.com/jdxj/wallpaper/octodex"
-
 	"github.com/jdxj/wallpaper/darenyou"
+	"github.com/jdxj/wallpaper/octodex"
+	"github.com/jdxj/wallpaper/polayoutu"
+	"github.com/jdxj/wallpaper/wallhaven"
 )
 
 var (
@@ -21,6 +20,7 @@ func init() {
 	RegisterCmdHandler(darenyou.NewCmdParser())
 	RegisterCmdHandler(octodex.NewCmdParser())
 	RegisterCmdHandler(polayoutu.NewCmdParser())
+	RegisterCmdHandler(wallhaven.NewCmdParser())
 }
 
 type Handler interface {
@@ -36,6 +36,7 @@ Command:
     octodex
     polayoutu
     darenyou
+    wallhaven
 
 Example:
     wallpaper polayoutu -h

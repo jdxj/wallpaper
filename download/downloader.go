@@ -3,10 +3,7 @@ package download
 import (
 	"fmt"
 	"io"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 
 	"github.com/jdxj/wallpaper/client"
 	"github.com/jdxj/wallpaper/utils"
@@ -155,6 +152,7 @@ func (d *Downloader) saveData() {
 // WaitSave 是阻塞的来等待所有数据保存到磁盘.
 // 注意: WaitSave 必须与 PushTask 在同一 goroutine,
 //     否则可能会出现 "panic: send on closed channel" 恐慌.
+//     或者使用其他手段保证 WaitSave 永远在 PushTask 后运行.
 // 注意: WaitSave 必须被调用, 否则只会保存部分数据.
 func (d *Downloader) WaitSave() {
 	close(d.stop)
@@ -169,13 +167,9 @@ func (d *Downloader) WaitSave() {
 // giveUp 接收中断信号, 放弃缓存立即结束下载.
 func (d *Downloader) GiveUp() {
 	go func() {
-		signals := make(chan os.Signal, 2)
-		signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
+		utils.ReceiveInterrupt()
 
-		select {
-		case <-signals:
-			fmt.Printf("downloader receive giveup signal\n")
-			close(d.giveUp)
-		}
+		fmt.Printf("downloader receive giveup signal\n")
+		close(d.giveUp)
 	}()
 }
