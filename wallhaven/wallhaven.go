@@ -51,6 +51,21 @@ func (c *Crawler) PushURL() {
 }
 
 func (c *Crawler) parsePageURL() {
+	if c.cmdParser.url != "" {
+		c.parsePageURLFromSpecified()
+		return
+	}
+
+	c.parsePageURLFromQuery()
+}
+
+// parsePageURLFromSpecified 创建一个下载任务.
+func (c *Crawler) parsePageURLFromSpecified() {
+	c.pageURLs <- c.cmdParser.url
+	close(c.pageURLs)
+}
+
+func (c *Crawler) parsePageURLFromQuery() {
 	query := c.initialQueryURL()
 	resp, err := client.Get(query)
 	if err != nil {
@@ -106,9 +121,9 @@ func (c *Crawler) initialQueryURL() string {
 
 func (c *Crawler) parseURL() {
 	for url := range c.pageURLs {
-		resp, err := client.Get(url)
+		resp, err := client.LimitedGet(url)
 		if err != nil {
-			fmt.Printf("parseURL-Get err: %s\n", err)
+			fmt.Printf("parseURL-LimitedGet err: %s\n", err)
 			continue
 		}
 

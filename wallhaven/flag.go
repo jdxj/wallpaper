@@ -57,6 +57,7 @@ type CmdParser struct {
 	page     int    // 必有字段
 
 	path string // 可选
+	url  string // 可选, 指定一个链接进行下载
 }
 
 func (cp *CmdParser) ParseCmd(params []string) error {
@@ -76,6 +77,7 @@ func (cp *CmdParser) ParseCmd(params []string) error {
 	flagSet.IntVar(&cp.page, "page", 1, "todo: page usage.")
 
 	flagSet.StringVar(&cp.path, "path", defaultSavePath, "todo: path usage.")
+	flagSet.StringVar(&cp.url, "url", "", "todo: url usage.")
 	return flagSet.Parse(params)
 }
 

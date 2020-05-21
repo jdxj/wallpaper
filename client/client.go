@@ -47,11 +47,7 @@ func GetReadCloser(url string) (io.ReadCloser, error) {
 
 // LimitedGet 用于限制请求速度
 func LimitedGet(url string) (*http.Response, error) {
-	extent := time.Second
-	timeout := time.Duration(limiter.Limit()*1000+0.5)*time.Millisecond + extent
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
+	ctx := context.Background()
 	if err := limiter.Wait(ctx); err != nil {
 		return nil, err
 	}
