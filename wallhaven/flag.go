@@ -2,6 +2,7 @@ package wallhaven
 
 import (
 	"flag"
+	"fmt"
 )
 
 const (
@@ -29,6 +30,14 @@ const (
 	// order
 	Desc = "desc"
 	Asc  = "asc"
+)
+
+var (
+	sortingOptionalValue = fmt.Sprintf("[%s | %s | %s | %s | %s | %s | %s]",
+		Relevance, Random, DateAdded, Views, Favorites, TopList, TopListBeta)
+	topRangeOptionalValue = fmt.Sprintf("[%s | %s | %s | %s | %s | %s | %s]",
+		OneDay, ThreeDay, OneWeek, OneMonth, ThreeMonth, SixMonth, OneYear)
+	orderOptionalValue = fmt.Sprintf("[%s | %s]", Desc, Asc)
 )
 
 func NewCmdParser() (string, *CmdParser) {
@@ -63,21 +72,21 @@ type CmdParser struct {
 func (cp *CmdParser) ParseCmd(params []string) error {
 	flagSet := flag.NewFlagSet(flagName, flag.ExitOnError)
 
-	flagSet.BoolVar(&cp.general, "general", false, "general sign.")
-	flagSet.BoolVar(&cp.anime, "anime", false, "anime sign.")
-	flagSet.BoolVar(&cp.people, "people", false, "people sign.")
+	flagSet.BoolVar(&cp.general, "general", false, "set general categories bit.")
+	flagSet.BoolVar(&cp.anime, "anime", false, "set anime categories bit.")
+	flagSet.BoolVar(&cp.people, "people", false, "set people categories bit.")
 
-	flagSet.BoolVar(&cp.sfw, "sfw", false, "sfw sign.")
-	flagSet.BoolVar(&cp.sketchy, "sketchy", false, "sketchy sign.")
-	flagSet.BoolVar(&cp.nsfw, "nsfw", false, "nsfw sign.")
+	flagSet.BoolVar(&cp.sfw, "sfw", false, "set sfw purity bit.")
+	flagSet.BoolVar(&cp.sketchy, "sketchy", false, "set sketchy purity bit")
+	flagSet.BoolVar(&cp.nsfw, "nsfw", false, "set nsfw purity bit.")
 
-	flagSet.StringVar(&cp.sorting, "sorting", TopList, "todo: sorting usage.")
-	flagSet.StringVar(&cp.topRange, "topRange", "", "todo: topRange usage.")
-	flagSet.StringVar(&cp.order, "order", Desc, "todo: order usage.")
-	flagSet.IntVar(&cp.page, "page", 1, "todo: page usage.")
+	flagSet.StringVar(&cp.sorting, "sorting", TopList, "set collation. "+sortingOptionalValue)
+	flagSet.StringVar(&cp.topRange, "topRange", "", "set time range. "+topRangeOptionalValue)
+	flagSet.StringVar(&cp.order, "order", Desc, "set order. "+orderOptionalValue)
+	flagSet.IntVar(&cp.page, "page", 1, "set page number, does not limit the scope.")
 
-	flagSet.StringVar(&cp.path, "path", defaultSavePath, "todo: path usage.")
-	flagSet.StringVar(&cp.url, "url", "", "todo: url usage.")
+	flagSet.StringVar(&cp.path, "path", defaultSavePath, "set storage path.")
+	flagSet.StringVar(&cp.url, "url", "", "specify the url of the image to download.")
 	return flagSet.Parse(params)
 }
 

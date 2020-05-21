@@ -169,7 +169,7 @@ func (d *Downloader) GiveUp() {
 	go func() {
 		utils.ReceiveInterrupt()
 
-		fmt.Printf("downloader receive giveup signal\n")
+		fmt.Printf("\ndownloader receive giveup signal\n")
 		close(d.giveUp)
 	}()
 }
