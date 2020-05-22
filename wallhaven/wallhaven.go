@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/jdxj/wallpaper/cache"
+
 	"github.com/PuerkitoBio/goquery"
 
 	"github.com/jdxj/wallpaper/client"
@@ -121,39 +123,61 @@ func (c *Crawler) initialQueryURL() string {
 
 func (c *Crawler) parseURL() {
 	for url := range c.pageURLs {
-		resp, err := client.LimitedGet(url)
+		// 查询缓存
+		value, err := cache.IsVisited(cache.Wallhaven, url)
+		if err != nil || value == "" { // 未命中
+			fmt.Printf("parseURL-check cache faild, value: %s, err: %s\n",
+				value, err)
+		} else { // 命中
+			fmt.Printf("parseURL-IsVisited, hit cache-> key: %s, value: %s\n",
+				url, value)
+			c.pushTask(value)
+			continue
+		}
+		// 未命中后进行 http 访问
+		imgURL, err := c.getImgURL(url)
 		if err != nil {
-			fmt.Printf("parseURL-LimitedGet err: %s\n", err)
+			fmt.Printf("parseURL-getImgURL err: %s", err)
 			continue
 		}
 
-		doc, err := goquery.NewDocumentFromReader(resp.Body)
-		if err != nil {
-			fmt.Printf("parseURL-NewDocumentFromReader err: %s\n", err)
-			_ = resp.Body.Close()
-			continue
+		c.pushTask(imgURL)
+		// 进行缓存
+		if err := cache.SaveValue(cache.Wallhaven, url, imgURL); err != nil {
+			fmt.Printf("parseURL-SaveValue err: %s\n", err)
 		}
+	}
+}
 
-		sel := doc.Find("#wallpaper")
-		attr, ok := sel.Attr("src")
-		if !ok {
-			fmt.Printf("not found wallpaper: %s\n", url)
-			_ = resp.Body.Close()
-			continue
-		}
+func (c *Crawler) getImgURL(preURL string) (string, error) {
+	resp, err := client.LimitedGet(preURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
 
-		fileName := utils.TruncateFileName(attr)
-		reqTask := &download.RequestTask{
-			Path:     c.cmdParser.path,
-			FileName: fileName,
-			URL:      attr,
-		}
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
+	}
 
-		if err := c.downloader.PushTask(reqTask); err != nil {
-			fmt.Printf("parseURL-PushTask err: %s\n", err)
-			_ = resp.Body.Close()
-			continue
-		}
-		_ = resp.Body.Close()
+	sel := doc.Find("#wallpaper")
+	attr, ok := sel.Attr("src")
+	if !ok {
+		return "", fmt.Errorf("not found wallpaper: %s\n", preURL)
+	}
+	return attr, nil
+}
+
+func (c *Crawler) pushTask(url string) {
+	fileName := utils.TruncateFileName(url)
+	reqTask := &download.RequestTask{
+		Path:     c.cmdParser.path,
+		FileName: fileName,
+		URL:      url,
+	}
+
+	if err := c.downloader.PushTask(reqTask); err != nil {
+		fmt.Printf("pushTask-PushTask err: %s\n", err)
 	}
 }
