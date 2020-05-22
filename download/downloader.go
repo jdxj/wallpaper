@@ -34,16 +34,16 @@ func NewDownloader() *Downloader {
 
 func NewDownloaderSize(requestLimit, saveLimit int) *Downloader {
 	d := &Downloader{
-		reqTasks:  make(chan *RequestTask, requestLimit),
-		saveTasks: make(chan *saveTask, saveLimit),
-		stop:      make(chan int),
-		giveUp:    make(chan int),
-		reqWG:     &sync.WaitGroup{},
-		saveWG:    &sync.WaitGroup{},
+		reqTasks:   make(chan *RequestTask, requestLimit),
+		saveTasks:  make(chan *saveTask, saveLimit),
+		stopPush:   make(chan int),
+		giveUpSign: make(chan int),
+		reqWG:      &sync.WaitGroup{},
+		saveWG:     &sync.WaitGroup{},
 	}
 
 	d.processingTasks()
-	d.GiveUp()
+	d.giveUp()
 	return d
 }
 
@@ -55,17 +55,17 @@ type Downloader struct {
 	saveTasks chan *saveTask
 	saveWG    *sync.WaitGroup
 
-	stop   chan int
-	giveUp chan int
+	stopPush   chan int
+	giveUpSign chan int
 }
 
 // PushTask 将 RequestTask 存入缓存中.
 func (d *Downloader) PushTask(requestTask *RequestTask) error {
 	select {
-	case <-d.stop:
+	case <-d.stopPush: // 此 case 尽量保证不出错
 		return fmt.Errorf("downloader already closed push task channel")
 
-	case <-d.giveUp:
+	case <-d.giveUpSign:
 		return fmt.Errorf("downloader is giving up on push task channel")
 
 	default:
@@ -100,7 +100,7 @@ func (d *Downloader) processingTasks() {
 func (d *Downloader) getData() {
 	for reqTask := range d.reqTasks {
 		select {
-		case <-d.giveUp:
+		case <-d.giveUpSign:
 			fmt.Printf("getData is giving up on: %#v\n", *reqTask)
 			continue
 
@@ -127,7 +127,7 @@ func (d *Downloader) getData() {
 func (d *Downloader) saveData() {
 	for saveTask := range d.saveTasks {
 		select {
-		case <-d.giveUp:
+		case <-d.giveUpSign:
 			fmt.Printf("saveData is giving up on: %s\n",
 				saveTask.reqTask.FileName)
 			saveTask.data.Close()
@@ -155,7 +155,7 @@ func (d *Downloader) saveData() {
 //     或者使用其他手段保证 WaitSave 永远在 PushTask 后运行.
 // 注意: WaitSave 必须被调用, 否则只会保存部分数据.
 func (d *Downloader) WaitSave() {
-	close(d.stop)
+	close(d.stopPush)
 
 	close(d.reqTasks)
 	d.reqWG.Wait()
@@ -165,11 +165,11 @@ func (d *Downloader) WaitSave() {
 }
 
 // giveUp 接收中断信号, 放弃缓存立即结束下载.
-func (d *Downloader) GiveUp() {
+func (d *Downloader) giveUp() {
 	go func() {
 		utils.ReceiveInterrupt()
 
 		fmt.Printf("\ndownloader receive giveup signal\n")
-		close(d.giveUp)
+		close(d.giveUpSign)
 	}()
 }

@@ -42,12 +42,12 @@ func TestDownloader_PushTask(t *testing.T) {
 	}
 
 	d := &Downloader{
-		reqTasks:  make(chan *RequestTask, RequestLimit),
-		saveTasks: make(chan *saveTask, SaveLimit),
-		stop:      make(chan int),
-		giveUp:    make(chan int),
-		reqWG:     &sync.WaitGroup{},
-		saveWG:    &sync.WaitGroup{},
+		reqTasks:   make(chan *RequestTask, RequestLimit),
+		saveTasks:  make(chan *saveTask, SaveLimit),
+		stopPush:   make(chan int),
+		giveUpSign: make(chan int),
+		reqWG:      &sync.WaitGroup{},
+		saveWG:     &sync.WaitGroup{},
 	}
 	// 测试 PushTask 与 WaitSave 在不同 goroutine 中的执行情况
 	go func() {
