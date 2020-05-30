@@ -19,10 +19,10 @@ const (
 	pageURLLimit = 24
 )
 
-func NewCrawler(cp *CmdParser) *Crawler {
+func NewCrawler(flags *Flags) *Crawler {
 	c := &Crawler{
 		downloader: download.NewDownloader(),
-		cmdParser:  cp,
+		flags:      flags,
 		pageURLs:   make(chan string, pageURLLimit),
 	}
 	return c
@@ -30,7 +30,7 @@ func NewCrawler(cp *CmdParser) *Crawler {
 
 type Crawler struct {
 	downloader *download.Downloader
-	cmdParser  *CmdParser
+	flags      *Flags
 
 	pageURLs chan string
 }
@@ -53,7 +53,7 @@ func (c *Crawler) PushURL() {
 }
 
 func (c *Crawler) parsePageURL() {
-	if c.cmdParser.url != "" {
+	if c.flags.Url != "" {
 		c.parsePageURLFromSpecified()
 		return
 	}
@@ -63,7 +63,7 @@ func (c *Crawler) parsePageURL() {
 
 // parsePageURLFromSpecified 创建一个下载任务.
 func (c *Crawler) parsePageURLFromSpecified() {
-	c.pageURLs <- c.cmdParser.url
+	c.pageURLs <- c.flags.Url
 	close(c.pageURLs)
 }
 
@@ -94,30 +94,30 @@ func (c *Crawler) parsePageURLFromQuery() {
 }
 
 func (c *Crawler) initialQueryURL() string {
-	cp := c.cmdParser
+	flags := c.flags
 
 	query := APIPrefix
 	categories := fmt.Sprintf("%d%d%d",
-		utils.BoolToInt(cp.general),
-		utils.BoolToInt(cp.anime),
-		utils.BoolToInt(cp.people),
+		utils.BoolToInt(flags.General),
+		utils.BoolToInt(flags.Anime),
+		utils.BoolToInt(flags.People),
 	)
 	query = fmt.Sprintf("%s?categories=%s", query, categories)
 
 	purity := fmt.Sprintf("%d%d%d",
-		utils.BoolToInt(cp.sfw),
-		utils.BoolToInt(cp.sketchy),
-		utils.BoolToInt(cp.nsfw),
+		utils.BoolToInt(flags.Sfw),
+		utils.BoolToInt(flags.Sketchy),
+		utils.BoolToInt(flags.Nsfw),
 	)
 	query = fmt.Sprintf("%s&purity=%s", query, purity)
 
-	if cp.topRange != "" {
-		query = fmt.Sprintf("%s&topRange=%s", query, cp.topRange)
+	if flags.TopRange != "" {
+		query = fmt.Sprintf("%s&topRange=%s", query, flags.TopRange)
 	}
 
-	query = fmt.Sprintf("%s&sorting=%s", query, cp.sorting)
-	query = fmt.Sprintf("%s&order=%s", query, cp.order)
-	query = fmt.Sprintf("%s?page=%d", query, cp.page)
+	query = fmt.Sprintf("%s&sorting=%s", query, flags.Sorting)
+	query = fmt.Sprintf("%s&order=%s", query, flags.Order)
+	query = fmt.Sprintf("%s&page=%d", query, flags.Page)
 	return query
 }
 
@@ -172,7 +172,7 @@ func (c *Crawler) getImgURL(preURL string) (string, error) {
 func (c *Crawler) pushTask(url string) {
 	fileName := utils.TruncateFileName(url)
 	reqTask := &download.RequestTask{
-		Path:     c.cmdParser.path,
+		Path:     c.flags.Path,
 		FileName: fileName,
 		URL:      url,
 	}

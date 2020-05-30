@@ -1,16 +1,13 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/jdxj/wallpaper/cmd"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		cmd.Usage()
-		return
+	if err := cmd.Execute(); err != nil {
+		fmt.Println(err)
 	}
-
-	cmd.HandleCmd(os.Args[1])
 }

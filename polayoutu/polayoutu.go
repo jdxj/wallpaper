@@ -13,22 +13,21 @@ const (
 	mainPage = "https://www.polayoutu.com/collections/get_entries_by_collection_id/%d?{}"
 )
 
-func NewCrawler(cp *CmdParser) *Crawler {
+func NewCrawler(flags *Flags) *Crawler {
 	pc := &Crawler{
 		downloader: download.NewDownloader(),
-		cmdParser:  cp,
+		flags:      flags,
 	}
 	return pc
 }
 
 type Crawler struct {
 	downloader *download.Downloader
-
-	cmdParser *CmdParser
+	flags      *Flags
 }
 
 func (pc *Crawler) PushURL() {
-	url := fmt.Sprintf(mainPage, pc.cmdParser.edition)
+	url := fmt.Sprintf(mainPage, pc.flags.Edition)
 	resp, err := client.Get(url)
 	if err != nil {
 		fmt.Printf("PushURL-Get err: %s\n", err)
@@ -51,7 +50,7 @@ func (pc *Crawler) PushURL() {
 
 	for _, photo := range photos {
 		var url string
-		switch pc.cmdParser.size {
+		switch pc.flags.Size {
 		case FullRes:
 			url = photo.FullRes
 
@@ -59,7 +58,7 @@ func (pc *Crawler) PushURL() {
 			url = photo.Thumb
 
 		default:
-			fmt.Printf("no this size: %s\n", pc.cmdParser.size)
+			fmt.Printf("no this size: %s\n", pc.flags.Size)
 			return
 		}
 
@@ -68,7 +67,7 @@ func (pc *Crawler) PushURL() {
 			photo.CollectionID, photo.ID, photo.UserID, suffix)
 
 		reqTask := &download.RequestTask{
-			Path:     pc.cmdParser.path,
+			Path:     pc.flags.Path,
 			FileName: fileName,
 			URL:      url,
 		}

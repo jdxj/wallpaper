@@ -15,18 +15,17 @@ const (
 	downloadPrefix = mainPage
 )
 
-func NewCrawler(cp *CmdParser) *Crawler {
+func NewCrawler(flags *Flags) *Crawler {
 	c := &Crawler{
 		downloader: download.NewDownloader(),
-		cmdParser:  cp,
+		flags:      flags,
 	}
 	return c
 }
 
 type Crawler struct {
 	downloader *download.Downloader
-
-	cmdParser *CmdParser
+	flags      *Flags
 }
 
 // PushURL 不断地获取下载链接
@@ -54,7 +53,7 @@ func (oc *Crawler) PushURL() {
 
 		fileName := utils.TruncateFileName(src)
 		reqTask := &download.RequestTask{
-			Path:     oc.cmdParser.path,
+			Path:     oc.flags.Path,
 			FileName: fileName,
 			URL:      downloadPrefix + "/" + src,
 		}
