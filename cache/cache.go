@@ -11,7 +11,10 @@ import (
 const (
 	dbPath = "cache.db"
 
+	// table name
 	Wallhaven = "wallhaven"
+	Octodex   = "octodex"
+	Polayoutu = "polayoutu"
 )
 
 var (
@@ -58,8 +61,8 @@ func IsVisited(table, key string) (string, error) {
 }
 
 func SaveValue(table, key, value string) error {
-	query := fmt.Sprintf("insert into %s (key,value) values (?,?)", table)
-	_, err := sqlite.Exec(query, key, value)
+	query := fmt.Sprintf("insert into %s (key,value,time) values (?,?,?)", table)
+	_, err := sqlite.Exec(query, key, value, time.Now().Unix())
 	return err
 }
 
