@@ -38,7 +38,6 @@ func IsVisited(key []byte) ([]byte, error) {
 		if err != nil {
 			return err
 		}
-
 		result, err = item.ValueCopy(nil)
 		return err
 	})
@@ -46,13 +45,11 @@ func IsVisited(key []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	// 检查是否超时
 	sv := &storeValue{}
 	if err := json.Unmarshal(result, sv); err != nil {
 		return nil, err
 	}
-
 	// 超过24小时, 缓存失效
 	if time.Now().Unix()-sv.Timestamp > 24*60*60 {
 		if err := DeleteValue(key); err != nil {
