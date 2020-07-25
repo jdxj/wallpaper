@@ -4,7 +4,7 @@ const (
 	DefaultSavePath = "data"
 )
 
-type Config struct {
+type Flags struct {
 	SavePath string
 	Retry    int
 }

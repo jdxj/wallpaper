@@ -3,80 +3,69 @@ package darenyou
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/astaxie/beego/logs"
-
 	"github.com/jdxj/wallpaper/client"
-	"github.com/panjf2000/ants/v2"
 
 	"github.com/PuerkitoBio/goquery"
-
-	"github.com/jdxj/wallpaper/downloader"
-	"github.com/jdxj/wallpaper/utils"
+	"github.com/astaxie/beego/logs"
 )
 
 const (
 	//mainPage = "https://darenyouphoto.com/_api/v0/site/youdaren/projects"
-	mainPage = "https://darenyouphoto.com/_api/v0/site/youdaren/projects?type=page&offset=0&limit=40"
+	mainPage      = "https://darenyouphoto.com/_api/v0/site/youdaren/projects?type=page&offset=0&limit=40"
+	projectAmount = 5
 )
 
-func New(flags *Flags) *DaRenYou {
-	pool, _ := ants.NewPool(10)
-	c := &DaRenYou{
-		gp:    pool,
-		c:     client.New(),
-		flags: flags,
+var (
+	ErrProjectAmountNotEnough = errors.New("project amount not enough")
+	ErrProjectNotFound        = errors.New("project not found")
+)
+
+func NewDaRenYouDLI(flags *Flags) *DaRenYouDLI {
+	c := &DaRenYouDLI{
+		c:       client.New(),
+		flags:   flags,
+		hasNext: true,
 	}
 	return c
 }
 
-type DaRenYou struct {
-	gp *ants.Pool
-	c  *http.Client
-
+type DaRenYouDLI struct {
+	c     *http.Client
 	flags *Flags
+
+	hasNext bool
 }
 
-func (dry *DaRenYou) Run() {
+func (dry *DaRenYouDLI) SetClient(c *http.Client) {
+	dry.c = c
+}
+
+func (dry *DaRenYouDLI) HasNext() bool {
+	return dry.hasNext
+}
+
+func (dry *DaRenYouDLI) Next() []string {
 	project, err := dry.parseJson()
 	if err != nil {
 		logs.Error("%s", err)
-		return
+		return nil
 	}
 
 	urls, err := dry.parseURL(project)
 	if err != nil {
 		logs.Error("%s", err)
-		return
+		return nil
 	}
-
-	for _, v := range urls {
-		fileName := utils.TruncateFileName(v)
-		reqTask := &downloader.RequestTask{
-			Path:     dry.cmdParser.path,
-			FileName: fileName,
-			URL:      v,
-		}
-
-		if err := dry.downloader.PushTask(reqTask); err != nil {
-			fmt.Printf("PushURL-PushTask err: %s\n", err)
-			continue
-		}
-	}
-	dry.downloader.WaitSave()
+	dry.hasNext = false
+	return urls
 }
 
-func (dry *DaRenYou) submitTask(downloadLink string) {
-	t := &task{}
-	if err := dry.gp.Submit(t.Func); err != nil {
-		logs.Error("%s", err)
-	}
-}
-
-func (dry *DaRenYou) parseJson() (*Project, error) {
+func (dry *DaRenYouDLI) parseJson() (*Project, error) {
 	c := dry.c
 	resp, err := c.Get(mainPage)
 	if err != nil {
@@ -84,15 +73,18 @@ func (dry *DaRenYou) parseJson() (*Project, error) {
 	}
 	defer resp.Body.Close()
 
+	// projects 相当于不同相册的集合
 	projects := make([]*Project, 0)
 	decoder := json.NewDecoder(resp.Body)
 	if err := decoder.Decode(&projects); err != nil {
 		return nil, err
 	}
 
-	if len(projects) < 4 {
-		return nil, fmt.Errorf("project num not enough: %d",
-			len(projects))
+	if len(projects) > projectAmount {
+		logs.Warn("may have created a new project")
+	}
+	if len(projects) < projectAmount {
+		return nil, ErrProjectAmountNotEnough
 	}
 
 	var project *Project
@@ -104,13 +96,12 @@ func (dry *DaRenYou) parseJson() (*Project, error) {
 	case Commissioned:
 		project = projects[2]
 	default:
-		return nil, fmt.Errorf("don't have this project: %s",
-			dry.flags.Project)
+		return nil, ErrProjectNotFound
 	}
 	return project, nil
 }
 
-func (dry *DaRenYou) parseURL(project *Project) ([]string, error) {
+func (dry *DaRenYouDLI) parseURL(project *Project) ([]string, error) {
 	reader := bytes.NewReader(project.Content)
 	doc, err := goquery.NewDocumentFromReader(reader)
 	if err != nil {
@@ -136,7 +127,6 @@ func (dry *DaRenYou) parseURL(project *Project) ([]string, error) {
 		if !ok {
 			return
 		}
-
 		// 清除无用字符
 		attr = strings.ReplaceAll(attr, `\`, "")
 		attr = strings.ReplaceAll(attr, `"`, "")

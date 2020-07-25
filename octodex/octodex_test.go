@@ -12,17 +12,8 @@ func TestPath(t *testing.T) {
 	t.Log(name)
 }
 
-func TestNew(t *testing.T) {
-	flags := &Flags{
-		Path:  "data",
-		Retry: 3,
-	}
-	oc := New(flags)
-	oc.Run()
-}
-
 func TestNewOctodexDLI(t *testing.T) {
-	cfg := &models.Config{
+	cfg := &models.Flags{
 		SavePath: "data",
 		Retry:    3,
 	}

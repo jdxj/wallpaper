@@ -2,23 +2,21 @@ package darenyou
 
 import (
 	"testing"
+
+	"github.com/jdxj/wallpaper/models"
 )
 
-func TestCrawler_PushURL(t *testing.T) {
-	c := NewCrawler(Chaos, SrcO)
-	c.PushURL()
-}
+func TestNewDaRenYouDLI(t *testing.T) {
+	flags := &Flags{
+		Project: Chaos,
+		Size:    Src,
+	}
+	dry := NewDaRenYouDLI(flags)
 
-func TestParseCmd(t *testing.T) {
-	params := []string{"-project", Commissioned, "-size", SrcO}
-	if err := ParseCmd(params); err != nil {
-		t.Fatalf("%s\n", err)
+	mFlags := &models.Flags{
+		SavePath: "data",
+		Retry:    3,
 	}
-
-	if project != Commissioned {
-		t.Fatalf("project err: %s\n", project)
-	}
-	if size != SrcO {
-		t.Fatalf("size err: %s\n", size)
-	}
+	cl := models.NewCrawler(mFlags, dry)
+	cl.Run()
 }

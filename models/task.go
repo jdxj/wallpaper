@@ -15,18 +15,18 @@ var (
 	ErrNotImage = errors.New("not image")
 )
 
-type Task struct {
+type task struct {
 	cl *Crawler
 
 	fileName     string
 	downloadLink string
 }
 
-func (t *Task) RunTask() {
+func (t *task) runTask() {
 	// 自动重试
-	retry := t.cl.cfg.Retry
+	retry := t.cl.flags.Retry
 	for i := 0; i < retry; i++ {
-		err := t.Download()
+		err := t.download()
 		if err == nil {
 			logs.Info("task finished, download link: %s", t.downloadLink)
 			t.cl.subOne()
@@ -38,16 +38,16 @@ func (t *Task) RunTask() {
 	logs.Error("task failed, download link: %s", t.downloadLink)
 }
 
-func (t *Task) Download() error {
+func (t *task) download() error {
 	c := t.cl.c
-	savePath := t.cl.cfg.SavePath
+	savePath := t.cl.flags.SavePath
 	resp, err := c.Get(t.downloadLink)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	if err := CheckContentType(resp); err != nil {
+	if err := checkContentType(resp); err != nil {
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (t *Task) Download() error {
 	return utils.WriteToFile(savePath, t.fileName, data)
 }
 
-func CheckContentType(resp *http.Response) error {
+func checkContentType(resp *http.Response) error {
 	ct := resp.Header.Get("Content-Type")
 	if strings.HasPrefix(ct, "image/") {
 		return nil

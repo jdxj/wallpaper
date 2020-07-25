@@ -11,7 +11,7 @@ import (
 	"github.com/panjf2000/ants/v2"
 )
 
-func NewCrawler(cfg *Config, dli DownloadLinkIterator) *Crawler {
+func NewCrawler(flags *Flags, dli DownloadLinkIterator) *Crawler {
 	c := client.New()
 	dli.SetClient(c)
 	gp, _ := ants.NewPool(10)
@@ -19,7 +19,7 @@ func NewCrawler(cfg *Config, dli DownloadLinkIterator) *Crawler {
 
 	cl := &Crawler{
 		gp:         gp,
-		cfg:        cfg,
+		flags:      flags,
 		unfinished: 0,
 		c:          c,
 		dli:        dli,
@@ -30,9 +30,9 @@ func NewCrawler(cfg *Config, dli DownloadLinkIterator) *Crawler {
 }
 
 type Crawler struct {
-	c   *http.Client
-	gp  *ants.Pool
-	cfg *Config
+	c     *http.Client
+	gp    *ants.Pool
+	flags *Flags
 
 	mutex      *sync.Mutex
 	cond       *sync.Cond
@@ -60,13 +60,13 @@ func (cl *Crawler) Run() {
 }
 
 func (cl *Crawler) submitTask(downloadLink string) {
-	t := &Task{
+	t := &task{
 		cl:           cl,
 		fileName:     path.Base(downloadLink),
 		downloadLink: downloadLink,
 	}
 
-	_ = cl.gp.Submit(t.RunTask)
+	_ = cl.gp.Submit(t.runTask)
 	logs.Info("task submitted, download link: %s", downloadLink)
 	cl.addOne()
 }
