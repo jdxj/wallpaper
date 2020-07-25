@@ -4,7 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
+
+	"github.com/jdxj/wallpaper/client"
+	"github.com/panjf2000/ants/v2"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -17,52 +23,62 @@ const (
 	mainPage = "https://darenyouphoto.com/_api/v0/site/youdaren/projects?type=page&offset=0&limit=40"
 )
 
-func NewCrawler(cp *CmdParser) *Crawler {
-	c := &Crawler{
-		downloader: downloader.NewDownloader(),
-		cmdParser:  cp,
+func New(flags *Flags) *DaRenYou {
+	pool, _ := ants.NewPool(10)
+	c := &DaRenYou{
+		gp:    pool,
+		c:     client.New(),
+		flags: flags,
 	}
 	return c
 }
 
-type Crawler struct {
-	downloader *downloader.Downloader
+type DaRenYou struct {
+	gp *ants.Pool
+	c  *http.Client
 
-	cmdParser *CmdParser
+	flags *Flags
 }
 
-func (c *Crawler) PushURL() {
-	project, err := c.parseJson()
+func (dry *DaRenYou) Run() {
+	project, err := dry.parseJson()
 	if err != nil {
-		fmt.Printf("PushURL-parseJson err: %s\n", err)
+		logs.Error("%s", err)
 		return
 	}
 
-	urls, err := c.parseURL(project)
+	urls, err := dry.parseURL(project)
 	if err != nil {
-		fmt.Printf("PushURL-parseURL err: %s\n", err)
+		logs.Error("%s", err)
 		return
 	}
-	fmt.Printf("urls len: %d\n", len(urls))
 
 	for _, v := range urls {
 		fileName := utils.TruncateFileName(v)
 		reqTask := &downloader.RequestTask{
-			Path:     c.cmdParser.path,
+			Path:     dry.cmdParser.path,
 			FileName: fileName,
 			URL:      v,
 		}
 
-		if err := c.downloader.PushTask(reqTask); err != nil {
+		if err := dry.downloader.PushTask(reqTask); err != nil {
 			fmt.Printf("PushURL-PushTask err: %s\n", err)
 			continue
 		}
 	}
-	c.downloader.WaitSave()
+	dry.downloader.WaitSave()
 }
 
-func (c *Crawler) parseJson() (*Project, error) {
-	resp, err := downloader.Get(mainPage)
+func (dry *DaRenYou) submitTask(downloadLink string) {
+	t := &task{}
+	if err := dry.gp.Submit(t.Func); err != nil {
+		logs.Error("%s", err)
+	}
+}
+
+func (dry *DaRenYou) parseJson() (*Project, error) {
+	c := dry.c
+	resp, err := c.Get(mainPage)
 	if err != nil {
 		return nil, err
 	}
@@ -80,21 +96,21 @@ func (c *Crawler) parseJson() (*Project, error) {
 	}
 
 	var project *Project
-	switch c.cmdParser.project {
+	switch dry.flags.Project {
 	case Chaos:
 		project = projects[0]
-
-	case Commissioned:
+	case Hysteresis:
 		project = projects[1]
-
+	case Commissioned:
+		project = projects[2]
 	default:
 		return nil, fmt.Errorf("don't have this project: %s",
-			c.cmdParser.project)
+			dry.flags.Project)
 	}
 	return project, nil
 }
 
-func (c *Crawler) parseURL(project *Project) ([]string, error) {
+func (dry *DaRenYou) parseURL(project *Project) ([]string, error) {
 	reader := bytes.NewReader(project.Content)
 	doc, err := goquery.NewDocumentFromReader(reader)
 	if err != nil {
@@ -102,18 +118,15 @@ func (c *Crawler) parseURL(project *Project) ([]string, error) {
 	}
 
 	var selector string
-	switch c.cmdParser.size {
+	switch dry.flags.Size {
 	case Src:
 		selector = Src
-
 	case SrcO:
 		selector = SrcO
-
 	case DataHiRes:
 		selector = DataHiRes
-
 	default:
-		return nil, fmt.Errorf("no this size: %s", c.cmdParser.size)
+		return nil, fmt.Errorf("no this size: %s", dry.flags.Size)
 	}
 
 	var result []string

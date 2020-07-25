@@ -3,6 +3,8 @@ package octodex
 import (
 	"path"
 	"testing"
+
+	"github.com/jdxj/wallpaper/models"
 )
 
 func TestPath(t *testing.T) {
@@ -17,4 +19,15 @@ func TestNew(t *testing.T) {
 	}
 	oc := New(flags)
 	oc.Run()
+}
+
+func TestNewOctodexDLI(t *testing.T) {
+	cfg := &models.Config{
+		SavePath: "data",
+		Retry:    3,
+	}
+	oDLI := NewOctodexDLI()
+
+	cl := models.NewCrawler(cfg, oDLI)
+	cl.Run()
 }
