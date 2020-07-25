@@ -1,10 +1,8 @@
 package darenyou
 
+import "github.com/jdxj/wallpaper/models"
+
 const (
-	flagName = "darenyou"
-
-	defaultSavePath = "data"
-
 	// project
 	Chaos        = "chaos"
 	Hysteresis   = "Hysteresis"
@@ -19,6 +17,7 @@ const (
 )
 
 type Flags struct {
+	models.CommonFlags
 	Project string
 	Size    string
 }

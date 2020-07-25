@@ -1,6 +1,6 @@
 fileName=wallpaper.out
 
-build:
+build: clean
 	go build -o $(fileName) *.go
 clean:
 	rm -rvf $(fileName)

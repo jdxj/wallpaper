@@ -16,38 +16,38 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/jdxj/wallpaper/polayoutu"
+	"github.com/jdxj/wallpaper/darenyou"
 
 	"github.com/spf13/cobra"
 )
 
-// polayoutuCmd represents the polayoutu command
-var polayoutuCmd = &cobra.Command{
-	Use:   "polayoutu",
-	Short: "Download photos from polayoutu",
+// darenyouCmd represents the darenyou command
+var darenyouCmd = &cobra.Command{
+	Use:   "darenyou",
+	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		polayoutu.Run(polFlags)
+		darenyou.Run(dryFlags)
 	},
 }
 
-var polFlags = &polayoutu.Flags{}
+var dryFlags = &darenyou.Flags{}
 
 func init() {
-	rootCmd.AddCommand(polayoutuCmd)
+	rootCmd.AddCommand(darenyouCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// polayoutuCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// darenyouCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// polayoutuCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// darenyouCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	polayoutuCmd.Flags().StringVarP(&polFlags.SavePath, "savePath", "sp", "data", "set save path")
-	polayoutuCmd.Flags().IntVarP(&polFlags.Retry, "retry", "r", 3, "set retry times")
+	darenyouCmd.Flags().StringVarP(&dryFlags.SavePath, "savePath", "sp", "data", "set save path")
+	darenyouCmd.Flags().IntVarP(&dryFlags.Retry, "retry", "r", 3, "set retry times")
 
-	polayoutuCmd.Flags().StringVarP(&polFlags.Size, "size", "s", polayoutu.Thumb, "specify picture resolution")
-	polayoutuCmd.Flags().IntVarP(&polFlags.Edition, "edition", "e", polayoutu.EditionNum, "specify edition")
+	darenyouCmd.Flags().StringVarP(&dryFlags.Project, "project", "p", darenyou.Chaos, "select a project (photo album)")
+	darenyouCmd.Flags().StringVarP(&dryFlags.Size, "size", "s", darenyou.Src, "specify picture resolution")
 }

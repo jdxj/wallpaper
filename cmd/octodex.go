@@ -26,8 +26,7 @@ var octodexCmd = &cobra.Command{
 	Use:   "octodex",
 	Short: "Download octodex avatar",
 	Run: func(cmd *cobra.Command, args []string) {
-		oc := octodex.New(octFlags)
-		oc.Run()
+		octodex.Run(octFlags)
 	},
 }
 
@@ -46,8 +45,6 @@ func init() {
 	// is called directly, e.g.:
 	// octodexCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	octodexCmd.Flags().StringVarP(&octFlags.Path, "path", "p", octodex.Path,
-		"path specifies the storage path of the picture")
-	octodexCmd.Flags().IntVarP(&octFlags.Retry, "retry", "r", 3,
-		"set the number of retries")
+	octodexCmd.Flags().StringVarP(&octFlags.SavePath, "savePath", "sp", "data", "set save path")
+	octodexCmd.Flags().IntVarP(&octFlags.Retry, "retry", "r", 3, "set retry times")
 }

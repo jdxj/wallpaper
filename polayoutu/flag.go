@@ -1,8 +1,8 @@
 package polayoutu
 
-const (
-	Path = "data"
+import "github.com/jdxj/wallpaper/models"
 
+const (
 	FullRes = "full"
 	Thumb   = "thumb"
 
@@ -10,6 +10,7 @@ const (
 )
 
 type Flags struct {
+	models.CommonFlags
 	Size    string
 	Edition int
 }
