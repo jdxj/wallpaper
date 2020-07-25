@@ -45,6 +45,6 @@ func init() {
 	// is called directly, e.g.:
 	// octodexCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	octodexCmd.Flags().StringVarP(&octFlags.SavePath, "savePath", "sp", "data", "set save path")
+	octodexCmd.Flags().StringVarP(&octFlags.SavePath, "savePath", "s", "data", "set save path")
 	octodexCmd.Flags().IntVarP(&octFlags.Retry, "retry", "r", 3, "set retry times")
 }

@@ -45,10 +45,10 @@ func init() {
 	// is called directly, e.g.:
 	// wallhavenCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	wallhavenCmd.Flags().StringVarP(&walFlags.SavePath, "savePath", "sp", "data", "set save path")
+	wallhavenCmd.Flags().StringVarP(&walFlags.SavePath, "savePath", "s", "data", "set save path")
 	wallhavenCmd.Flags().IntVarP(&walFlags.Retry, "retry", "r", 3, "set retry times")
 
-	wallhavenCmd.Flags().StringVarP(&walFlags.UserName, "userName", "un", "", "set user name")
-	wallhavenCmd.Flags().StringVarP(&walFlags.CollectionID, "collectionID", "ci", "", "set collection id")
-	wallhavenCmd.Flags().StringVarP(&walFlags.APIKey, "apiKey", "ak", "", "set api key")
+	wallhavenCmd.Flags().StringVarP(&walFlags.UserName, "userName", "u", "", "set user name")
+	wallhavenCmd.Flags().StringVarP(&walFlags.CollectionID, "collectionID", "i", "", "set collection id")
+	wallhavenCmd.Flags().StringVarP(&walFlags.APIKey, "apiKey", "k", "", "set api key")
 }

@@ -45,7 +45,7 @@ func init() {
 	// is called directly, e.g.:
 	// polayoutuCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	polayoutuCmd.Flags().StringVarP(&polFlags.SavePath, "savePath", "sp", "data", "set save path")
+	polayoutuCmd.Flags().StringVarP(&polFlags.SavePath, "savePath", "a", "data", "set save path")
 	polayoutuCmd.Flags().IntVarP(&polFlags.Retry, "retry", "r", 3, "set retry times")
 
 	polayoutuCmd.Flags().StringVarP(&polFlags.Size, "size", "s", polayoutu.Thumb, "specify picture resolution")

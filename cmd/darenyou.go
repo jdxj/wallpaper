@@ -45,7 +45,7 @@ func init() {
 	// is called directly, e.g.:
 	// darenyouCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	darenyouCmd.Flags().StringVarP(&dryFlags.SavePath, "savePath", "sp", "data", "set save path")
+	darenyouCmd.Flags().StringVarP(&dryFlags.SavePath, "savePath", "a", "data", "set save path")
 	darenyouCmd.Flags().IntVarP(&dryFlags.Retry, "retry", "r", 3, "set retry times")
 
 	darenyouCmd.Flags().StringVarP(&dryFlags.Project, "project", "p", darenyou.Chaos, "select a project (photo album)")
