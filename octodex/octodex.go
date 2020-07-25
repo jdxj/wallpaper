@@ -58,7 +58,8 @@ func (oc *Octodex) Run() {
 		oc.cond.Wait()
 	}
 	oc.mutex.Unlock()
-	logs.Info("all task finish")
+
+	oc.Stop()
 }
 
 func (oc *Octodex) getDownloadLink() ([]string, error) {
@@ -115,4 +116,10 @@ func (oc *Octodex) sub() {
 	oc.total--
 	oc.cond.Signal()
 	oc.mutex.Unlock()
+}
+
+func (oc *Octodex) Stop() {
+	oc.c.CloseIdleConnections()
+	oc.gp.Release()
+	logs.Info("all task finish")
 }
