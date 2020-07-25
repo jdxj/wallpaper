@@ -4,7 +4,7 @@ const (
 	DefaultSavePath = "data"
 )
 
-type Flags struct {
+type CommonFlags struct {
 	SavePath string
 	Retry    int
 }

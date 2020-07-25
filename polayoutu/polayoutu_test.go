@@ -11,7 +11,7 @@ func TestNewPoLaYouTuDLI(t *testing.T) {
 		Size:    Thumb,
 		Edition: 183,
 	}
-	mFlags := &models.Flags{
+	mFlags := &models.CommonFlags{
 		SavePath: "data",
 		Retry:    3,
 	}

@@ -23,7 +23,7 @@ func TestInitialQueryURL(t *testing.T) {
 		Page:     1,
 	}
 
-	c := &Crawler{
+	c := &WallhavenDLI{
 		flags: flags,
 	}
 

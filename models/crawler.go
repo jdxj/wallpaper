@@ -13,7 +13,7 @@ import (
 	"github.com/panjf2000/ants/v2"
 )
 
-func NewCrawler(flags *Flags, dli DownloadLinkIterator) *Crawler {
+func NewCrawler(flags *CommonFlags, dli DownloadLinkIterator) *Crawler {
 	c := client.New()
 	dli.SetClient(c)
 	gp, _ := ants.NewPool(10)
@@ -34,7 +34,7 @@ func NewCrawler(flags *Flags, dli DownloadLinkIterator) *Crawler {
 type Crawler struct {
 	c     *http.Client
 	gp    *ants.Pool
-	flags *Flags
+	flags *CommonFlags
 
 	mutex      *sync.Mutex
 	cond       *sync.Cond

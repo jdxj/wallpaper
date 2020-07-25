@@ -13,7 +13,7 @@ func TestPath(t *testing.T) {
 }
 
 func TestNewOctodexDLI(t *testing.T) {
-	cfg := &models.Flags{
+	cfg := &models.CommonFlags{
 		SavePath: "data",
 		Retry:    3,
 	}

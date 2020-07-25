@@ -26,8 +26,7 @@ var wallhavenCmd = &cobra.Command{
 	Use:   "wallhaven",
 	Short: "Download wallpapers from wallhaven",
 	Run: func(cmd *cobra.Command, args []string) {
-		wc := wallhaven.NewCrawler(walFlags)
-		wc.PushURL()
+		wallhaven.Run(walFlags)
 	},
 }
 
@@ -46,31 +45,10 @@ func init() {
 	// is called directly, e.g.:
 	// wallhavenCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	wallhavenCmd.Flags().BoolVar(&walFlags.General, "general", false,
-		"set general categories bit")
-	wallhavenCmd.Flags().BoolVar(&walFlags.Anime, "anime", false,
-		"set anime categories bit")
-	wallhavenCmd.Flags().BoolVar(&walFlags.People, "people", false,
-		"set people categories bit")
+	wallhavenCmd.Flags().StringVarP(&walFlags.SavePath, "savePath", "sp", "data", "set save path")
+	wallhavenCmd.Flags().IntVarP(&walFlags.Retry, "retry", "r", 3, "set retry times")
 
-	wallhavenCmd.Flags().BoolVar(&walFlags.Sfw, "sfw", false,
-		"set sfw purity bit")
-	wallhavenCmd.Flags().BoolVar(&walFlags.Sketchy, "sketchy", false,
-		"set sketchy purity bit")
-	wallhavenCmd.Flags().BoolVar(&walFlags.Nsfw, "nsfw", false,
-		"set nsfw purity bit")
-
-	wallhavenCmd.Flags().StringVar(&walFlags.Sorting, "sorting", wallhaven.TopList,
-		"set collation "+wallhaven.SortingOptionalValue)
-	wallhavenCmd.Flags().StringVar(&walFlags.TopRange, "topRange", "",
-		"set time range "+wallhaven.TopRangeOptionalValue)
-	wallhavenCmd.Flags().StringVar(&walFlags.Order, "order", wallhaven.Desc,
-		"set order "+wallhaven.OrderOptionalValue)
-	wallhavenCmd.Flags().IntVar(&walFlags.Page, "page", 1,
-		"set page number, does not limit the scope")
-
-	wallhavenCmd.Flags().StringVarP(&walFlags.Path, "path", "p", wallhaven.Path,
-		"set storage path")
-	wallhavenCmd.Flags().StringVarP(&walFlags.Url, "url", "u", "",
-		"specify the url of the image to download")
+	wallhavenCmd.Flags().StringVarP(&walFlags.UserName, "userName", "un", "", "set user name")
+	wallhavenCmd.Flags().StringVarP(&walFlags.CollectionID, "collectionID", "ci", "", "set collection id")
+	wallhavenCmd.Flags().StringVarP(&walFlags.APIKey, "apiKey", "ak", "", "set api key")
 }

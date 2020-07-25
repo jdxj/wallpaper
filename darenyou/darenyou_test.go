@@ -13,7 +13,7 @@ func TestNewDaRenYouDLI(t *testing.T) {
 	}
 	dry := NewDaRenYouDLI(flags)
 
-	mFlags := &models.Flags{
+	mFlags := &models.CommonFlags{
 		SavePath: "data",
 		Retry:    3,
 	}
