@@ -5,7 +5,7 @@ import "github.com/jdxj/wallpaper/models"
 const (
 	// project
 	Chaos        = "chaos"
-	Hysteresis   = "Hysteresis"
+	Hysteresis   = "hysteresis"
 	Commissioned = "commissioned"
 
 	// size
