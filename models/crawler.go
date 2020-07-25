@@ -1,9 +1,11 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 	"path"
 	"sync"
+	"time"
 
 	"github.com/jdxj/wallpaper/client"
 
@@ -60,9 +62,11 @@ func (cl *Crawler) Run() {
 }
 
 func (cl *Crawler) submitTask(downloadLink string) {
+	prefix := fmt.Sprintf("%d", time.Now().UnixNano())
+	fileName := fmt.Sprintf("%s-%s", prefix, path.Base(downloadLink))
 	t := &task{
 		cl:           cl,
-		fileName:     path.Base(downloadLink),
+		fileName:     fileName,
 		downloadLink: downloadLink,
 	}
 

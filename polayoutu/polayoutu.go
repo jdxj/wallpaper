@@ -2,76 +2,90 @@ package polayoutu
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 
-	"github.com/jdxj/wallpaper/downloader"
-	"github.com/jdxj/wallpaper/utils"
+	"github.com/astaxie/beego/logs"
 )
 
 const (
 	mainPage = "https://www.polayoutu.com/collections/get_entries_by_collection_id/%d?{}"
 )
 
-func NewCrawler(flags *Flags) *Crawler {
-	pc := &Crawler{
-		downloader: downloader.NewDownloader(),
-		flags:      flags,
+var (
+	ErrSizeNotFound = errors.New("size not found")
+)
+
+func NewPoLaYouTuDLI(flags *Flags) *PoLaYouTuDLI {
+	pl := &PoLaYouTuDLI{
+		flags:   flags,
+		hasNext: true,
 	}
-	return pc
+	return pl
 }
 
-type Crawler struct {
-	downloader *downloader.Downloader
-	flags      *Flags
+type PoLaYouTuDLI struct {
+	c       *http.Client
+	flags   *Flags
+	hasNext bool
 }
 
-func (pc *Crawler) PushURL() {
-	url := fmt.Sprintf(mainPage, pc.flags.Edition)
-	resp, err := downloader.Get(url)
+func (pl *PoLaYouTuDLI) SetClient(c *http.Client) {
+	pl.c = c
+}
+
+func (pl *PoLaYouTuDLI) HasNext() bool {
+	return pl.hasNext
+}
+
+func (pl *PoLaYouTuDLI) Next() []string {
+	dls, err := pl.parseDownloadLinks()
 	if err != nil {
-		fmt.Printf("PushURL-Get err: %s\n", err)
-		return
+		logs.Error("%s", err)
+		return nil
+	}
+	pl.hasNext = false
+	return dls
+}
+
+func (pl *PoLaYouTuDLI) parseDownloadLinks() ([]string, error) {
+	flags := pl.flags
+	url := fmt.Sprintf(mainPage, flags.Edition)
+
+	resp, err := pl.c.Get(url)
+	if err != nil {
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	decoder := json.NewDecoder(resp.Body)
 	rJson := &ResponseJson{}
 	if err := decoder.Decode(rJson); err != nil {
-		fmt.Printf("PushURL-Decode err: %s\n", err)
-		return
+		return nil, err
 	}
 
 	photos := make([]*Photo, 0)
 	if err := json.Unmarshal(rJson.Data, &photos); err != nil {
-		fmt.Printf("PushURL-Unmarshal err: %s\n", err)
-		return
+		return nil, err
+	}
+	if len(photos) == 0 {
+		logs.Warn("edition may be error")
+		return nil, nil
 	}
 
+	downloadLinks := make([]string, 0, len(photos))
 	for _, photo := range photos {
 		var url string
-		switch pc.flags.Size {
+		switch flags.Size {
 		case FullRes:
 			url = photo.FullRes
-
 		case Thumb:
 			url = photo.Thumb
-
 		default:
-			fmt.Printf("no this size: %s\n", pc.flags.Size)
-			return
+			return nil, ErrSizeNotFound
 		}
-
-		suffix := utils.TruncateFileName(url)
-		fileName := fmt.Sprintf("%d_%d_%d_%s",
-			photo.CollectionID, photo.ID, photo.UserID, suffix)
-
-		reqTask := &downloader.RequestTask{
-			Path:     pc.flags.Path,
-			FileName: fileName,
-			URL:      url,
-		}
-		pc.downloader.PushTask(reqTask)
+		downloadLinks = append(downloadLinks, url)
 	}
-
-	pc.downloader.WaitSave()
+	return downloadLinks, nil
 }

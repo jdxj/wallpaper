@@ -48,7 +48,7 @@ func init() {
 
 	polayoutuCmd.Flags().StringVarP(&polFlags.Path, "path", "p", polayoutu.Path,
 		"path specifies the storage path of the picture")
-	polayoutuCmd.Flags().StringVarP(&polFlags.Size, "size", "s", polayoutu.Size,
+	polayoutuCmd.Flags().StringVarP(&polFlags.Size, "size", "s", polayoutu.Thumb,
 		"size specifies the resolution of the image to be downloaded. you can choose [full | thumb]")
 	polayoutuCmd.Flags().IntVarP(&polFlags.Edition, "edition", "e", polayoutu.EditionNum,
 		"edition specifies which period to download")

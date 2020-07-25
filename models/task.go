@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	ErrNotImage = errors.New("not image")
+	ErrNotImage            = errors.New("not image")
+	ErrContentTypeNotFound = errors.New("Content-Type not found")
 )
 
 type task struct {
@@ -32,8 +33,13 @@ func (t *task) runTask() {
 			t.cl.subOne()
 			return
 		}
+
 		logs.Error("task retry, download link: [%d]-%s, err: %s",
 			i, t.downloadLink, err)
+		if err == ErrNotImage {
+			// 如果不是 image, 则直接退出而不重试.
+			break
+		}
 	}
 	logs.Error("task failed, download link: %s", t.downloadLink)
 }
@@ -48,7 +54,11 @@ func (t *task) download() error {
 	defer resp.Body.Close()
 
 	if err := checkContentType(resp); err != nil {
-		return err
+		if err == ErrContentTypeNotFound {
+			logs.Warn("%s", ErrContentTypeNotFound)
+		} else {
+			return err
+		}
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
@@ -61,7 +71,12 @@ func (t *task) download() error {
 
 func checkContentType(resp *http.Response) error {
 	ct := resp.Header.Get("Content-Type")
+	if ct == "" {
+		return ErrContentTypeNotFound
+	}
 	if strings.HasPrefix(ct, "image/") {
+		return nil
+	} else if strings.HasSuffix(ct, "octet-stream") {
 		return nil
 	}
 	return ErrNotImage

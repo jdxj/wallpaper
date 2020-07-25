@@ -1,8 +1,22 @@
 package polayoutu
 
-import "testing"
+import (
+	"testing"
 
-func TestCrawler_PushURL(t *testing.T) {
-	c := NewCrawler(Thumb)
-	c.PushURL(182)
+	"github.com/jdxj/wallpaper/models"
+)
+
+func TestNewPoLaYouTuDLI(t *testing.T) {
+	flags := &Flags{
+		Size:    Thumb,
+		Edition: 183,
+	}
+	mFlags := &models.Flags{
+		SavePath: "data",
+		Retry:    3,
+	}
+
+	pl := NewPoLaYouTuDLI(flags)
+	cl := models.NewCrawler(mFlags, pl)
+	cl.Run()
 }
