@@ -8,8 +8,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"github.com/jdxj/wallpaper/client"
-	"github.com/jdxj/wallpaper/download"
+	"github.com/jdxj/wallpaper/downloader"
 	"github.com/jdxj/wallpaper/utils"
 )
 
@@ -21,7 +20,7 @@ const (
 
 func NewCrawler(flags *Flags) *Crawler {
 	c := &Crawler{
-		downloader: download.NewDownloader(),
+		downloader: downloader.NewDownloader(),
 		flags:      flags,
 		pageURLs:   make(chan string, pageURLLimit),
 	}
@@ -29,7 +28,7 @@ func NewCrawler(flags *Flags) *Crawler {
 }
 
 type Crawler struct {
-	downloader *download.Downloader
+	downloader *downloader.Downloader
 	flags      *Flags
 
 	pageURLs chan string
@@ -40,7 +39,7 @@ func (c *Crawler) PushURL() {
 	go c.parsePageURL()
 
 	wg := sync.WaitGroup{}
-	for i := 0; i < download.GoroutineLimit; i++ {
+	for i := 0; i < downloader.GoroutineLimit; i++ {
 		wg.Add(1)
 		go func() {
 			c.parseURL()
@@ -69,7 +68,7 @@ func (c *Crawler) parsePageURLFromSpecified() {
 
 func (c *Crawler) parsePageURLFromQuery() {
 	query := c.initialQueryURL()
-	resp, err := client.Get(query)
+	resp, err := downloader.Get(query)
 	if err != nil {
 		fmt.Printf("parsePageURL-Get err: %s\n", err)
 		return
@@ -124,14 +123,15 @@ func (c *Crawler) initialQueryURL() string {
 func (c *Crawler) parseURL() {
 	for url := range c.pageURLs {
 		// 查询缓存
-		value, err := cache.IsVisited(cache.Wallhaven, url)
-		if err != nil || value == "" { // 未命中
+		// todo: 实现
+		value, err := cache.IsVisited(nil)
+		if err != nil || value == nil { // 未命中
 			fmt.Printf("parseURL-check cache faild, value: %s, err: %s\n",
 				value, err)
 		} else { // 命中
 			fmt.Printf("parseURL-IsVisited, hit cache-> key: %s, value: %s\n",
 				url, value)
-			c.pushTask(value)
+			c.pushTask("") // todo
 			continue
 		}
 		// 未命中后进行 http 访问
@@ -143,14 +143,15 @@ func (c *Crawler) parseURL() {
 
 		c.pushTask(imgURL)
 		// 进行缓存
-		if err := cache.SaveValue(cache.Wallhaven, url, imgURL); err != nil {
+		// todo
+		if err := cache.SaveValue(nil, nil); err != nil {
 			fmt.Printf("parseURL-SaveValue err: %s\n", err)
 		}
 	}
 }
 
 func (c *Crawler) getImgURL(preURL string) (string, error) {
-	resp, err := client.LimitedGet(preURL)
+	resp, err := downloader.LimitedGet(preURL)
 	if err != nil {
 		return "", err
 	}
@@ -171,7 +172,7 @@ func (c *Crawler) getImgURL(preURL string) (string, error) {
 
 func (c *Crawler) pushTask(url string) {
 	fileName := utils.TruncateFileName(url)
-	reqTask := &download.RequestTask{
+	reqTask := &downloader.RequestTask{
 		Path:     c.flags.Path,
 		FileName: fileName,
 		URL:      url,

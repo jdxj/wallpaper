@@ -1,9 +1,10 @@
 package octodex
 
-type Flags struct {
-	Path string
-}
-
 const (
 	Path = "data"
 )
+
+type Flags struct {
+	Path  string
+	Retry int
+}

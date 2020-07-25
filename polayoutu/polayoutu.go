@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/jdxj/wallpaper/client"
-	"github.com/jdxj/wallpaper/download"
+	"github.com/jdxj/wallpaper/downloader"
 	"github.com/jdxj/wallpaper/utils"
 )
 
@@ -15,20 +14,20 @@ const (
 
 func NewCrawler(flags *Flags) *Crawler {
 	pc := &Crawler{
-		downloader: download.NewDownloader(),
+		downloader: downloader.NewDownloader(),
 		flags:      flags,
 	}
 	return pc
 }
 
 type Crawler struct {
-	downloader *download.Downloader
+	downloader *downloader.Downloader
 	flags      *Flags
 }
 
 func (pc *Crawler) PushURL() {
 	url := fmt.Sprintf(mainPage, pc.flags.Edition)
-	resp, err := client.Get(url)
+	resp, err := downloader.Get(url)
 	if err != nil {
 		fmt.Printf("PushURL-Get err: %s\n", err)
 		return
@@ -66,7 +65,7 @@ func (pc *Crawler) PushURL() {
 		fileName := fmt.Sprintf("%d_%d_%d_%s",
 			photo.CollectionID, photo.ID, photo.UserID, suffix)
 
-		reqTask := &download.RequestTask{
+		reqTask := &downloader.RequestTask{
 			Path:     pc.flags.Path,
 			FileName: fileName,
 			URL:      url,

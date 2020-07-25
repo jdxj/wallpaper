@@ -1,16 +1,20 @@
 package octodex
 
-import "testing"
+import (
+	"path"
+	"testing"
+)
 
-func TestCrawler_PushURL(t *testing.T) {
-	flags := &Flags{
-		Path: Path,
-	}
-	c := NewCrawler(flags)
-	c.PushURL()
+func TestPath(t *testing.T) {
+	name := path.Base("https://octodex.github.com/images/Terracottocat_Single.png")
+	t.Log(name)
 }
 
-func TestPushURLFromWeb(t *testing.T) {
-	c := NewCrawler(nil)
-	c.pushURLFromWeb()
+func TestNew(t *testing.T) {
+	flags := &Flags{
+		Path:  "data",
+		Retry: 3,
+	}
+	oc := New(flags)
+	oc.Run()
 }

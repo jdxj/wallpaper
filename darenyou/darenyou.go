@@ -8,8 +8,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"github.com/jdxj/wallpaper/client"
-	"github.com/jdxj/wallpaper/download"
+	"github.com/jdxj/wallpaper/downloader"
 	"github.com/jdxj/wallpaper/utils"
 )
 
@@ -20,14 +19,14 @@ const (
 
 func NewCrawler(cp *CmdParser) *Crawler {
 	c := &Crawler{
-		downloader: download.NewDownloader(),
+		downloader: downloader.NewDownloader(),
 		cmdParser:  cp,
 	}
 	return c
 }
 
 type Crawler struct {
-	downloader *download.Downloader
+	downloader *downloader.Downloader
 
 	cmdParser *CmdParser
 }
@@ -48,7 +47,7 @@ func (c *Crawler) PushURL() {
 
 	for _, v := range urls {
 		fileName := utils.TruncateFileName(v)
-		reqTask := &download.RequestTask{
+		reqTask := &downloader.RequestTask{
 			Path:     c.cmdParser.path,
 			FileName: fileName,
 			URL:      v,
@@ -63,7 +62,7 @@ func (c *Crawler) PushURL() {
 }
 
 func (c *Crawler) parseJson() (*Project, error) {
-	resp, err := client.Get(mainPage)
+	resp, err := downloader.Get(mainPage)
 	if err != nil {
 		return nil, err
 	}

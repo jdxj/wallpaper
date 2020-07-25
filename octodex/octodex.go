@@ -1,15 +1,15 @@
 package octodex
 
 import (
-	"encoding/json"
-	"fmt"
+	"net/http"
+	"path"
+	"sync"
 
-	"github.com/jdxj/wallpaper/cache"
 	"github.com/jdxj/wallpaper/client"
-	"github.com/jdxj/wallpaper/download"
-	"github.com/jdxj/wallpaper/utils"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/astaxie/beego/logs"
+	"github.com/panjf2000/ants/v2"
 )
 
 const (
@@ -17,64 +17,64 @@ const (
 	downloadPrefix = mainPage
 )
 
-func NewCrawler(flags *Flags) *Crawler {
-	c := &Crawler{
-		downloader: download.NewDownloader(),
-		flags:      flags,
+func New(flags *Flags) *Octodex {
+	pool, _ := ants.NewPool(50)
+
+	c := &Octodex{
+		flags: flags,
+		c:     client.New(),
+		gp:    pool,
+		mutex: &sync.Mutex{},
 	}
+	c.cond = sync.NewCond(c.mutex)
 	return c
 }
 
-type Crawler struct {
-	downloader *download.Downloader
-	flags      *Flags
+type Octodex struct {
+	flags *Flags
+	c     *http.Client
+	gp    *ants.Pool
+
+	mutex *sync.Mutex
+	cond  *sync.Cond
+	total int
 }
 
-// PushURL 不断地获取下载链接
-func (oc *Crawler) PushURL() {
-	result, err := cache.IsVisited(key)
+func (oc *Octodex) Run() {
+	dls, err := oc.getDownloadLink()
 	if err != nil {
-		fmt.Printf("PushURL-IsVisited err: %s\n", err)
-
-		oc.pushURLFromWeb()
+		logs.Error("%s", err)
 		return
 	}
 
-	du := &downloadURLs{}
-	if err := json.Unmarshal(result, du); err != nil {
-		fmt.Printf("PushURL-Unmarshal err: %s\n", err)
-
-		oc.pushURLFromWeb()
-		return
+	for _, dl := range dls {
+		oc.submitTask(dl)
 	}
 
-	oc.pushURLFromCache(du.Urls)
-	oc.downloader.WaitSave()
-}
-
-func (oc *Crawler) pushURLFromCache(urls []string) {
-	fmt.Printf("get urls from cache!\n")
-	for _, url := range urls {
-		oc.pushURL(url)
+	// 利用条件锁进行阻塞
+	oc.mutex.Lock()
+	// 仍有未完成的任务
+	for oc.total != 0 {
+		oc.cond.Wait()
 	}
+	oc.mutex.Unlock()
+	logs.Info("all task finish")
 }
 
-func (oc *Crawler) pushURLFromWeb() {
-	fmt.Printf("get urls from web!\n")
-	resp, err := client.Get(mainPage)
+func (oc *Octodex) getDownloadLink() ([]string, error) {
+	c := oc.c
+	resp, err := c.Get(mainPage)
 	if err != nil {
-		fmt.Printf("PushURL-Get err: %s\n", err)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		fmt.Printf("PushURL-NewDocumentFromReader err: %s\n", err)
-		return
+		return nil, err
 	}
-	// 缓存用
-	var urls []string
+
+	downloadURLs := make([]string, 0, 200)
 	sel := doc.Find(".width-fit")
 	sel.Each(func(i int, selI *goquery.Selection) {
 		// src 的格式为: "/images/Octoqueer.png"
@@ -83,32 +83,36 @@ func (oc *Crawler) pushURLFromWeb() {
 			return
 		}
 		url := downloadPrefix + src
-		urls = append(urls, url)
-		oc.pushURL(url)
+		downloadURLs = append(downloadURLs, url)
 	})
-
-	cacheUrls(urls)
+	return downloadURLs, nil
 }
 
-func (oc *Crawler) pushURL(url string) {
-	fileName := utils.TruncateFileName(url)
-	reqTask := &download.RequestTask{
-		Path:     oc.flags.Path,
-		FileName: fileName,
-		URL:      url,
+func (oc *Octodex) submitTask(downloadLink string) {
+	t := &task{
+		oc:           oc,
+		downloadLink: downloadLink,
+		fileName:     path.Base(downloadLink),
 	}
 
-	if err := oc.downloader.PushTask(reqTask); err != nil {
-		fmt.Printf("pushURL-PushTask err: %s\n", err)
+	if err := oc.gp.Submit(t.Func); err != nil {
+		logs.Error("%s", err)
+		return
 	}
+
+	logs.Info("task submitted: %s", t.downloadLink)
+	oc.add()
 }
 
-func cacheUrls(urls []string) {
-	du := &downloadURLs{
-		Urls: urls,
-	}
-	data, _ := json.Marshal(du)
-	if err := cache.SaveValue(key, data); err != nil {
-		fmt.Printf("pushURLFromWeb-SaveValue: err: %s\n", err)
-	}
+func (oc *Octodex) add() {
+	oc.mutex.Lock()
+	oc.total++
+	oc.mutex.Unlock()
+}
+
+func (oc *Octodex) sub() {
+	oc.mutex.Lock()
+	oc.total--
+	oc.cond.Signal()
+	oc.mutex.Unlock()
 }
