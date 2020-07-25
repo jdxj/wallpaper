@@ -1,32 +1,22 @@
 package wallhaven
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/jdxj/wallpaper/models"
 )
 
-func TestPrintBoolToInt(t *testing.T) {
-	fmt.Printf("%d\n", 0)
-}
-
-func TestInitialQueryURL(t *testing.T) {
+func TestNewWallhavenDLI(t *testing.T) {
 	flags := &Flags{
-		General:  true,
-		Anime:    true,
-		People:   true,
-		Sfw:      true,
-		Sketchy:  true,
-		Nsfw:     true,
-		Sorting:  Random,
-		TopRange: SixMonth,
-		Order:    Desc,
-		Page:     1,
+		CommonFlags: models.CommonFlags{
+			SavePath:   "data",
+			Retry:      3,
+			Concurrent: 1,
+		},
+		UserName:     "spraayer",
+		CollectionID: "482246",
+		APIKey:       "lQ69hWxkJb9FWaoQ7zoGkRbMLIIXsVKJ",
+		Limit:        1,
 	}
-
-	c := &WallhavenDLI{
-		flags: flags,
-	}
-
-	result := c.initialQueryURL()
-	fmt.Printf("%s\n", result)
+	Run(flags)
 }

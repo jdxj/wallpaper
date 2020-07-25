@@ -47,6 +47,7 @@ func init() {
 
 	polayoutuCmd.Flags().StringVarP(&polFlags.SavePath, "savePath", "a", "data", "set save path")
 	polayoutuCmd.Flags().IntVarP(&polFlags.Retry, "retry", "r", 3, "set retry times")
+	polayoutuCmd.Flags().IntVarP(&polFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 
 	polayoutuCmd.Flags().StringVarP(&polFlags.Size, "size", "s", polayoutu.Thumb, "specify picture resolution")
 	polayoutuCmd.Flags().IntVarP(&polFlags.Edition, "edition", "e", polayoutu.EditionNum, "specify edition")

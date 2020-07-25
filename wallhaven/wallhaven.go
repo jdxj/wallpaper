@@ -32,13 +32,19 @@ func (wd *WallhavenDLI) SetClient(c *http.Client) {
 }
 
 func (wd *WallhavenDLI) HasNext() bool {
+	limit := wd.flags.Limit
+	if limit > 0 { // 只下载前几页
+		return wd.currPage <= limit
+	}
 	return wd.currPage <= wd.lastPage
 }
 
 func (wd *WallhavenDLI) Next() []string {
+	wd.currPage++
 	dls, err := wd.parseDownloadLinks(wd.currPage)
 	if err != nil {
 		logs.Error("%s", err)
+		wd.currPage--
 		return nil
 	}
 	return dls
@@ -75,7 +81,6 @@ func (wd *WallhavenDLI) parseDownloadLinks(page int) ([]string, error) {
 
 	// 更新状态
 	meta := respJson.Meta
-	wd.currPage++
 	wd.lastPage = meta.LastPage
 	return downloadLinks, nil
 }

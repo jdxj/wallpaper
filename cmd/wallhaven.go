@@ -47,8 +47,10 @@ func init() {
 
 	wallhavenCmd.Flags().StringVarP(&walFlags.SavePath, "savePath", "s", "data", "set save path")
 	wallhavenCmd.Flags().IntVarP(&walFlags.Retry, "retry", "r", 3, "set retry times")
+	wallhavenCmd.Flags().IntVarP(&walFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 
 	wallhavenCmd.Flags().StringVarP(&walFlags.UserName, "userName", "u", "", "set user name")
 	wallhavenCmd.Flags().StringVarP(&walFlags.CollectionID, "collectionID", "i", "", "set collection id")
 	wallhavenCmd.Flags().StringVarP(&walFlags.APIKey, "apiKey", "k", "", "set api key")
+	wallhavenCmd.Flags().IntVarP(&walFlags.Limit, "limit", "l", 0, "specify the number of download pages")
 }

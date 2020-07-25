@@ -47,4 +47,5 @@ func init() {
 
 	octodexCmd.Flags().StringVarP(&octFlags.SavePath, "savePath", "s", "data", "set save path")
 	octodexCmd.Flags().IntVarP(&octFlags.Retry, "retry", "r", 3, "set retry times")
+	octodexCmd.Flags().IntVarP(&octFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 }

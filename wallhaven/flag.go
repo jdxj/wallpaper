@@ -7,4 +7,5 @@ type Flags struct {
 	UserName     string
 	CollectionID string
 	APIKey       string
+	Limit        int
 }

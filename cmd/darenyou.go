@@ -47,6 +47,7 @@ func init() {
 
 	darenyouCmd.Flags().StringVarP(&dryFlags.SavePath, "savePath", "a", "data", "set save path")
 	darenyouCmd.Flags().IntVarP(&dryFlags.Retry, "retry", "r", 3, "set retry times")
+	darenyouCmd.Flags().IntVarP(&dryFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 
 	darenyouCmd.Flags().StringVarP(&dryFlags.Project, "project", "p", darenyou.Chaos, "select a project (photo album)")
 	darenyouCmd.Flags().StringVarP(&dryFlags.Size, "size", "s", darenyou.Src, "specify picture resolution")
