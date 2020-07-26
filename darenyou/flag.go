@@ -17,7 +17,7 @@ const (
 )
 
 type Flags struct {
-	models.CommonFlags
+	*models.CommonFlags
 	Project string
 	Size    string
 }

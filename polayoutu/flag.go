@@ -10,7 +10,7 @@ const (
 )
 
 type Flags struct {
-	models.CommonFlags
+	*models.CommonFlags
 	Size    string
 	Edition int
 }

@@ -30,7 +30,9 @@ var darenyouCmd = &cobra.Command{
 	},
 }
 
-var dryFlags = &darenyou.Flags{}
+var dryFlags = &darenyou.Flags{
+	CommonFlags: &commFlags,
+}
 
 func init() {
 	rootCmd.AddCommand(darenyouCmd)
@@ -45,9 +47,9 @@ func init() {
 	// is called directly, e.g.:
 	// darenyouCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	darenyouCmd.Flags().StringVarP(&dryFlags.SavePath, "savePath", "a", "data", "set save path")
-	darenyouCmd.Flags().IntVarP(&dryFlags.Retry, "retry", "r", 3, "set retry times")
-	darenyouCmd.Flags().IntVarP(&dryFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
+	//darenyouCmd.Flags().StringVarP(&dryFlags.SavePath, "savePath", "a", "data", "set save path")
+	//darenyouCmd.Flags().IntVarP(&dryFlags.Retry, "retry", "r", 3, "set retry times")
+	//darenyouCmd.Flags().IntVarP(&dryFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 
 	darenyouCmd.Flags().StringVarP(&dryFlags.Project, "project", "p", darenyou.Chaos, "select a project (photo album) [chaos, hysteresis, commissioned]")
 	darenyouCmd.Flags().StringVarP(&dryFlags.Size, "size", "s", darenyou.Src, "specify picture resolution [src, src_o, data-hi-res]")

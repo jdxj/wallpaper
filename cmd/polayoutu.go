@@ -30,7 +30,9 @@ var polayoutuCmd = &cobra.Command{
 	},
 }
 
-var polFlags = &polayoutu.Flags{}
+var polFlags = &polayoutu.Flags{
+	CommonFlags: &commFlags,
+}
 
 func init() {
 	rootCmd.AddCommand(polayoutuCmd)
@@ -45,9 +47,9 @@ func init() {
 	// is called directly, e.g.:
 	// polayoutuCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	polayoutuCmd.Flags().StringVarP(&polFlags.SavePath, "savePath", "a", "data", "set save path")
-	polayoutuCmd.Flags().IntVarP(&polFlags.Retry, "retry", "r", 3, "set retry times")
-	polayoutuCmd.Flags().IntVarP(&polFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
+	//polayoutuCmd.Flags().StringVarP(&polFlags.SavePath, "savePath", "a", "data", "set save path")
+	//polayoutuCmd.Flags().IntVarP(&polFlags.Retry, "retry", "r", 3, "set retry times")
+	//polayoutuCmd.Flags().IntVarP(&polFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 
 	polayoutuCmd.Flags().StringVarP(&polFlags.Size, "size", "s", polayoutu.Thumb, "specify picture resolution [ful, thumb]")
 	polayoutuCmd.Flags().IntVarP(&polFlags.Edition, "edition", "e", polayoutu.EditionNum, "specify edition")

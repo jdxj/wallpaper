@@ -30,7 +30,9 @@ var octodexCmd = &cobra.Command{
 	},
 }
 
-var octFlags = &octodex.Flags{}
+var octFlags = &octodex.Flags{
+	CommonFlags: &commFlags,
+}
 
 func init() {
 	rootCmd.AddCommand(octodexCmd)
@@ -45,7 +47,7 @@ func init() {
 	// is called directly, e.g.:
 	// octodexCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	octodexCmd.Flags().StringVarP(&octFlags.SavePath, "savePath", "s", "data", "set save path")
-	octodexCmd.Flags().IntVarP(&octFlags.Retry, "retry", "r", 3, "set retry times")
-	octodexCmd.Flags().IntVarP(&octFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
+	//octodexCmd.Flags().StringVarP(&octFlags.SavePath, "savePath", "s", "data", "set save path")
+	//octodexCmd.Flags().IntVarP(&octFlags.Retry, "retry", "r", 3, "set retry times")
+	//octodexCmd.Flags().IntVarP(&octFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 }

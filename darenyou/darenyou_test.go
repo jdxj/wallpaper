@@ -8,7 +8,7 @@ import (
 
 func TestNewDaRenYouDLI(t *testing.T) {
 	flags := &Flags{
-		Project: Hysteresis,
+		Project: Chaos,
 		Size:    Src,
 	}
 	dry := NewDaRenYouDLI(flags)
