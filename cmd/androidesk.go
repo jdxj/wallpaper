@@ -16,37 +16,36 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/jdxj/wallpaper/app/darenyou"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
 
-// darenyouCmd represents the darenyou command
-var darenyouCmd = &cobra.Command{
-	Use:   "darenyou",
+// androideskCmd represents the androidesk command
+var androideskCmd = &cobra.Command{
+	Use:   "androidesk",
 	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		darenyou.Run(dryFlags)
+		fmt.Println("androidesk called")
 	},
 }
 
-var dryFlags = &darenyou.Flags{
-	CommonFlags: commFlags,
-}
-
 func init() {
-	rootCmd.AddCommand(darenyouCmd)
+	rootCmd.AddCommand(androideskCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// darenyouCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// androideskCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// darenyouCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	darenyouCmd.Flags().StringVarP(&dryFlags.Project, "project", "p", darenyou.Chaos, "select a project (photo album) [chaos, hysteresis, commissioned]")
-	darenyouCmd.Flags().StringVarP(&dryFlags.Size, "size", "s", darenyou.Src, "specify picture resolution [src, src_o, data-hi-res]")
+	// androideskCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

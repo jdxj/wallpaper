@@ -31,7 +31,7 @@ var octodexCmd = &cobra.Command{
 }
 
 var octFlags = &octodex.Flags{
-	CommonFlags: &commFlags,
+	CommonFlags: commFlags,
 }
 
 func init() {

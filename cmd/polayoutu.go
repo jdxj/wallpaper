@@ -31,7 +31,7 @@ var polayoutuCmd = &cobra.Command{
 }
 
 var polFlags = &polayoutu.Flags{
-	CommonFlags: &commFlags,
+	CommonFlags: commFlags,
 }
 
 func init() {

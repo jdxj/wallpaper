@@ -9,7 +9,7 @@ var rootCmd = &cobra.Command{
 	Use: "wallpaper",
 }
 
-var commFlags = models.CommonFlags{}
+var commFlags = &models.CommonFlags{}
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&commFlags.SavePath, "path", "data", "set save path")

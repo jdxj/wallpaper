@@ -16,37 +16,39 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/jdxj/wallpaper/app/darenyou"
+	"github.com/jdxj/wallpaper/app/androidesk/album"
 
 	"github.com/spf13/cobra"
 )
 
-// darenyouCmd represents the darenyou command
-var darenyouCmd = &cobra.Command{
-	Use:   "darenyou",
-	Short: "A brief description of your command",
+// albumCmd represents the album command
+var albumCmd = &cobra.Command{
+	Use:   "album",
+	Short: "download androidesk album",
 	Run: func(cmd *cobra.Command, args []string) {
-		darenyou.Run(dryFlags)
+		album.Run(albumFlags)
 	},
 }
 
-var dryFlags = &darenyou.Flags{
+var albumFlags = &album.Flags{
 	CommonFlags: commFlags,
 }
 
 func init() {
-	rootCmd.AddCommand(darenyouCmd)
+	androideskCmd.AddCommand(albumCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// darenyouCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// albumCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// darenyouCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// albumCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	darenyouCmd.Flags().StringVarP(&dryFlags.Project, "project", "p", darenyou.Chaos, "select a project (photo album) [chaos, hysteresis, commissioned]")
-	darenyouCmd.Flags().StringVarP(&dryFlags.Size, "size", "s", darenyou.Src, "specify picture resolution [src, src_o, data-hi-res]")
+	albumCmd.Flags().StringVarP(&albumFlags.ID, "id", "i", "", "album id")
+	albumCmd.Flags().IntVarP(&albumFlags.Limit, "limit", "l", 0, "specify the number of download pages")
+	albumCmd.Flags().BoolVarP(&albumFlags.Adult, "adult", "a", false, "may not have adult content")
+	albumCmd.Flags().StringVarP(&albumFlags.Order, "order", "o", album.New, "specify collation")
 }

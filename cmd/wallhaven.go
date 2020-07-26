@@ -31,7 +31,7 @@ var wallhavenCmd = &cobra.Command{
 }
 
 var walFlags = &wallhaven.Flags{
-	CommonFlags: &commFlags,
+	CommonFlags: commFlags,
 }
 
 func init() {
