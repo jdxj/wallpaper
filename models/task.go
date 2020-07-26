@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -51,22 +50,8 @@ func (t *task) download() error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
-	if err := checkContentType(resp); err != nil {
-		if err == ErrContentTypeNotFound {
-			logs.Warn("%s", ErrContentTypeNotFound)
-		} else {
-			return err
-		}
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return utils.WriteToFile(savePath, t.fileName, data)
+	return utils.WriteFromReadCloser(savePath, t.fileName, resp.Body)
 }
 
 func checkContentType(resp *http.Response) error {

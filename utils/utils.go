@@ -6,24 +6,17 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 )
 
-func WriteToFile(path, name string, data []byte) error {
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		return err
+var (
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			return bufio.NewWriter(nil)
+		},
 	}
-
-	path = filepath.Join(path, name)
-	file, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	_, err = file.Write(data)
-	return err
-}
+)
 
 // WriteFromReadCloser 读取 r 中所有数据到文件,
 // 其必须调用 r.Close() 方法.
@@ -34,24 +27,20 @@ func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 		return err
 	}
 
-	file, err := os.Create(path + "/" + fileName)
+	path = filepath.Join(path, fileName)
+	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	bufW := bufio.NewWriter(file)
+	bufW := bufferPool.Get().(*bufio.Writer)
+	defer bufferPool.Put(bufW)
+	bufW.Reset(file)
 	defer bufW.Flush()
 
 	_, err = bufW.ReadFrom(r)
 	return err
-}
-
-func BoolToInt(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
 }
 
 // ReceiveInterrupt 用于接收中断信号, 其必须在新 goroutine 中.
