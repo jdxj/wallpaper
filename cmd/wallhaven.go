@@ -16,7 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/jdxj/wallpaper/wallhaven"
+	"github.com/jdxj/wallpaper/app/wallhaven"
 
 	"github.com/spf13/cobra"
 )
@@ -46,10 +46,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// wallhavenCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	//wallhavenCmd.Flags().StringVarP(&walFlags.SavePath, "savePath", "s", "data", "set save path")
-	//wallhavenCmd.Flags().IntVarP(&walFlags.Retry, "retry", "r", 3, "set retry times")
-	//wallhavenCmd.Flags().IntVarP(&walFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 
 	wallhavenCmd.Flags().StringVarP(&walFlags.UserName, "userName", "u", "", "set user name")
 	wallhavenCmd.Flags().StringVarP(&walFlags.CollectionID, "collectionID", "i", "", "set collection id")

@@ -16,7 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/jdxj/wallpaper/octodex"
+	"github.com/jdxj/wallpaper/app/octodex"
 
 	"github.com/spf13/cobra"
 )
@@ -46,8 +46,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// octodexCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	//octodexCmd.Flags().StringVarP(&octFlags.SavePath, "savePath", "s", "data", "set save path")
-	//octodexCmd.Flags().IntVarP(&octFlags.Retry, "retry", "r", 3, "set retry times")
-	//octodexCmd.Flags().IntVarP(&octFlags.Concurrent, "concurrent", "c", 10, "set goroutine pool size")
 }
