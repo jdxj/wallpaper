@@ -23,13 +23,26 @@ type task struct {
 }
 
 func (t *task) runTask() {
+	// 对于提交成功的任务, 不管下载成功还是失败,
+	// 下载结束后都要调用 subOne().
+	defer t.cl.subOne()
+
 	// 自动重试
 	retry := t.cl.flags.Retry
 	for i := 0; i < retry; i++ {
+		// 这里是个耗时操作, 提前拦截
+		select {
+		case <-utils.Stop:
+			logs.Info("stop runTask, download link: %s",
+				t.downloadLink)
+			return
+		default:
+		}
+
+		// 进入下载的任务不中断
 		err := t.download()
 		if err == nil {
 			logs.Info("task finished, download link: %s", t.downloadLink)
-			t.cl.subOne()
 			return
 		}
 

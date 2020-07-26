@@ -17,7 +17,7 @@ func TestNewAlbumDLI(t *testing.T) {
 	flags := &Flags{
 		CommonFlags: mFlags,
 		ID:          "5d834a6fe7bce73981fabf4c",
-		Limit:       0,
+		Limit:       2,
 		Adult:       false,
 		Order:       New,
 	}

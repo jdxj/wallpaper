@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astaxie/beego/logs"
-
 	"github.com/jdxj/wallpaper/app/androidesk"
+
+	"github.com/astaxie/beego/logs"
 )
 
 const (
@@ -91,6 +91,9 @@ func (ad *AlbumDLI) parseDownloadLinks(qu string) ([]string, error) {
 	downloadLinks := make([]string, 0, ad.amount)
 	for _, ww := range w.Data {
 		downloadLinks = append(downloadLinks, ww.Img)
+	}
+	if len(downloadLinks) == 0 {
+		logs.Warn("not get download links, query url: %s", qu)
 	}
 	return downloadLinks, nil
 }

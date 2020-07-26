@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+
+	"github.com/astaxie/beego/logs"
 )
 
 var (
@@ -16,6 +18,9 @@ var (
 			return bufio.NewWriter(nil)
 		},
 	}
+
+	// 停止信号
+	Stop = make(chan int)
 )
 
 // WriteFromReadCloser 读取 r 中所有数据到文件,
@@ -50,4 +55,7 @@ func ReceiveInterrupt() {
 	select {
 	case <-signals:
 	}
+
+	logs.Warn("receive stop signal")
+	close(Stop)
 }

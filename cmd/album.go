@@ -47,7 +47,7 @@ func init() {
 	// is called directly, e.g.:
 	// albumCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	albumCmd.Flags().StringVarP(&albumFlags.ID, "id", "i", "", "album id")
+	albumCmd.Flags().StringVarP(&albumFlags.ID, "id", "n", "5d834a6fe7bce73981fabf4c", "album id. the default value is only for testing")
 	albumCmd.Flags().IntVarP(&albumFlags.Limit, "limit", "l", 0, "specify the number of download pages")
 	albumCmd.Flags().BoolVarP(&albumFlags.Adult, "adult", "a", false, "may not have adult content")
 	albumCmd.Flags().StringVarP(&albumFlags.Order, "order", "o", album.New, "specify collation")

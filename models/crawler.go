@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jdxj/wallpaper/client"
+	"github.com/jdxj/wallpaper/utils"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/panjf2000/ants/v2"
@@ -46,12 +47,22 @@ type Crawler struct {
 func (cl *Crawler) Run() {
 	dli := cl.dli
 	for dli.HasNext() {
+		// 由于这里可能会长时间获取下载链接,
+		// 所以该位置用于判断是否停止.
+		select {
+		case <-utils.Stop:
+			logs.Info("stop get download links")
+			goto skip
+		default:
+		}
+
 		dls := dli.Next()
 		for _, dl := range dls {
 			cl.submitTask(dl)
 		}
 	}
 
+skip:
 	cl.mutex.Lock()
 	for cl.unfinished != 0 { // 有未完成的任务
 		cl.cond.Wait()
@@ -62,6 +73,16 @@ func (cl *Crawler) Run() {
 }
 
 func (cl *Crawler) submitTask(downloadLink string) {
+	// 可能有部分下载链接没有拦截,
+	// 所以这里是一个停止点.
+	select {
+	case <-utils.Stop:
+		logs.Info("stop submit, download link: %s",
+			downloadLink)
+		return
+	default:
+	}
+
 	prefix := fmt.Sprintf("%d", time.Now().UnixNano())
 	fileName := fmt.Sprintf("%s-%s", prefix, path.Base(downloadLink))
 	t := &task{
