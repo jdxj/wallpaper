@@ -27,3 +27,15 @@ func TestDetectFileType(t *testing.T) {
 	result := http.DetectContentType(buf)
 	t.Logf("file type: %s\n", result)
 }
+
+func TestWriteFromReadCloser(t *testing.T) {
+	file, err := os.Open("image")
+	if err != nil {
+		t.Fatalf("%s\n", err)
+	}
+
+	err = WriteFromReadCloser("data", "abc", file)
+	if err != nil {
+		t.Fatalf("%s\n", err)
+	}
+}

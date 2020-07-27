@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"io"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -15,7 +16,14 @@ import (
 var (
 	bufferPool = sync.Pool{
 		New: func() interface{} {
-			return bufio.NewWriter(nil)
+			return bufio.NewReader(nil)
+		},
+	}
+
+	headPool = sync.Pool{
+		New: func() interface{} {
+			buf := make([]byte, 512)
+			return &buf
 		},
 	}
 
@@ -28,10 +36,22 @@ var (
 func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 	defer r.Close()
 
+	headBuf := headPool.Get().(*[]byte)
+	defer headPool.Put(headBuf)
+
+	bufR := bufferPool.Get().(*bufio.Reader)
+	defer bufferPool.Put(bufR)
+
+	bufR.Reset(r)
+	if _, err := bufR.Read(*headBuf); err != nil {
+		return err
+	}
+	ext := GetFileExtension(*headBuf)
+	fileName = fileName + ext
+
 	if err := os.MkdirAll(path, os.ModePerm); err != nil {
 		return err
 	}
-
 	path = filepath.Join(path, fileName)
 	file, err := os.Create(path)
 	if err != nil {
@@ -39,12 +59,10 @@ func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 	}
 	defer file.Close()
 
-	bufW := bufferPool.Get().(*bufio.Writer)
-	defer bufferPool.Put(bufW)
-	bufW.Reset(file)
-	defer bufW.Flush()
-
-	_, err = bufW.ReadFrom(r)
+	if _, err := file.Write(*headBuf); err != nil {
+		return err
+	}
+	_, err = bufR.WriteTo(file)
 	return err
 }
 
@@ -58,4 +76,17 @@ func ReceiveInterrupt() {
 
 	logs.Warn("receive stop signal")
 	close(Stop)
+}
+
+func GetFileExtension(head []byte) string {
+	mime := http.DetectContentType(head)
+
+	switch mime {
+	case "image/png":
+		return ".png"
+	case "image/jpeg":
+		return ".jpg"
+	default:
+		return ".unknown"
+	}
 }
