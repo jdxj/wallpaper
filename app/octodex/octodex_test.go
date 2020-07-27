@@ -1,8 +1,11 @@
 package octodex
 
 import (
+	"fmt"
 	"path"
 	"testing"
+
+	"github.com/jdxj/wallpaper/client"
 
 	"github.com/jdxj/wallpaper/models"
 )
@@ -21,4 +24,12 @@ func TestNewOctodexDLI(t *testing.T) {
 
 	cl := models.NewCrawler(cfg, oDLI)
 	cl.Run()
+}
+
+func TestOctodexDL_URL(t *testing.T) {
+	oDLI := NewOctodexDLI()
+	oDLI.c = client.New()
+	for _, v := range oDLI.Next() {
+		fmt.Printf("%s, %s\n", v.URL(), v.FileName())
+	}
 }

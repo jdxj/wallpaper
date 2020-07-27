@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
+	"time"
 
-	"github.com/jdxj/wallpaper/client"
+	"github.com/jdxj/wallpaper/models"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/astaxie/beego/logs"
@@ -27,7 +29,6 @@ var (
 
 func NewDaRenYouDLI(flags *Flags) *DaRenYouDLI {
 	c := &DaRenYouDLI{
-		c:       client.New(),
 		flags:   flags,
 		hasNext: true,
 	}
@@ -49,7 +50,7 @@ func (dry *DaRenYouDLI) HasNext() bool {
 	return dry.hasNext
 }
 
-func (dry *DaRenYouDLI) Next() []string {
+func (dry *DaRenYouDLI) Next() []models.DownloadLink {
 	project, err := dry.parseJson()
 	if err != nil {
 		logs.Error("%s", err)
@@ -101,7 +102,7 @@ func (dry *DaRenYouDLI) parseJson() (*Project, error) {
 	return project, nil
 }
 
-func (dry *DaRenYouDLI) parseURL(project *Project) ([]string, error) {
+func (dry *DaRenYouDLI) parseURL(project *Project) ([]models.DownloadLink, error) {
 	reader := bytes.NewReader(project.Content)
 	doc, err := goquery.NewDocumentFromReader(reader)
 	if err != nil {
@@ -120,7 +121,7 @@ func (dry *DaRenYouDLI) parseURL(project *Project) ([]string, error) {
 		return nil, fmt.Errorf("no this size: %s", dry.flags.Size)
 	}
 
-	var result []string
+	var result []models.DownloadLink
 	sel := doc.Find("img")
 	sel.Each(func(i int, selection *goquery.Selection) {
 		attr, ok := selection.Attr(selector)
@@ -130,7 +131,28 @@ func (dry *DaRenYouDLI) parseURL(project *Project) ([]string, error) {
 		// 清除无用字符
 		attr = strings.ReplaceAll(attr, `\`, "")
 		attr = strings.ReplaceAll(attr, `"`, "")
-		result = append(result, attr)
+
+		dl := &dryDL{
+			downloadLink: attr,
+		}
+		result = append(result, dl)
 	})
 	return result, nil
+}
+
+type dryDL struct {
+	downloadLink string
+}
+
+func (dd *dryDL) URL() string {
+	return dd.downloadLink
+}
+
+func (dd *dryDL) FileName() string {
+	suffix := filepath.Base(dd.downloadLink)
+	idx := strings.LastIndex(suffix, "_")
+	if idx < 0 {
+		return fmt.Sprintf("darenyou_%d", time.Now().UnixNano())
+	}
+	return suffix[:idx]
 }

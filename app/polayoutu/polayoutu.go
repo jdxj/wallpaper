@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/jdxj/wallpaper/models"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -39,7 +42,7 @@ func (pl *PoLaYouTuDLI) HasNext() bool {
 	return pl.hasNext
 }
 
-func (pl *PoLaYouTuDLI) Next() []string {
+func (pl *PoLaYouTuDLI) Next() []models.DownloadLink {
 	dls, err := pl.parseDownloadLinks()
 	if err != nil {
 		logs.Error("%s", err)
@@ -49,7 +52,7 @@ func (pl *PoLaYouTuDLI) Next() []string {
 	return dls
 }
 
-func (pl *PoLaYouTuDLI) parseDownloadLinks() ([]string, error) {
+func (pl *PoLaYouTuDLI) parseDownloadLinks() ([]models.DownloadLink, error) {
 	flags := pl.flags
 	url := fmt.Sprintf(mainPage, flags.Edition)
 
@@ -74,7 +77,7 @@ func (pl *PoLaYouTuDLI) parseDownloadLinks() ([]string, error) {
 		return nil, nil
 	}
 
-	downloadLinks := make([]string, 0, len(photos))
+	downloadLinks := make([]models.DownloadLink, 0, len(photos))
 	for _, photo := range photos {
 		var url string
 		switch flags.Size {
@@ -85,7 +88,35 @@ func (pl *PoLaYouTuDLI) parseDownloadLinks() ([]string, error) {
 		default:
 			return nil, ErrSizeNotFound
 		}
-		downloadLinks = append(downloadLinks, url)
+
+		dl := &plytDL{
+			downloadLink: url,
+			collectionID: photo.CollectionID,
+			userID:       photo.UserID,
+			id:           photo.ID,
+			tags:         photo.Tags,
+		}
+		downloadLinks = append(downloadLinks, dl)
 	}
 	return downloadLinks, nil
+}
+
+type plytDL struct {
+	downloadLink string
+
+	collectionID int
+	userID       int
+	id           int
+	tags         string
+}
+
+func (pd *plytDL) URL() string {
+	return pd.downloadLink
+}
+
+func (pd *plytDL) FileName() string {
+	tags := strings.ReplaceAll(pd.tags, "，", "-")
+	tags = strings.ReplaceAll(tags, " ", "-")
+	return fmt.Sprintf("%d_%d_%d_%s",
+		pd.collectionID, pd.userID, pd.id, tags)
 }

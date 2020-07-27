@@ -1,11 +1,8 @@
 package models
 
 import (
-	"fmt"
 	"net/http"
-	"path"
 	"sync"
-	"time"
 
 	"github.com/jdxj/wallpaper/client"
 	"github.com/jdxj/wallpaper/utils"
@@ -72,27 +69,25 @@ skip:
 	cl.stop()
 }
 
-func (cl *Crawler) submitTask(downloadLink string) {
+func (cl *Crawler) submitTask(dl DownloadLink) {
 	// 可能有部分下载链接没有拦截,
 	// 所以这里是一个停止点.
 	select {
 	case <-utils.Stop:
 		logs.Info("stop submit, download link: %s",
-			downloadLink)
+			dl.URL())
 		return
 	default:
 	}
 
-	prefix := fmt.Sprintf("%d", time.Now().UnixNano())
-	fileName := fmt.Sprintf("%s-%s", prefix, path.Base(downloadLink))
 	t := &task{
 		cl:           cl,
-		fileName:     fileName,
-		downloadLink: downloadLink,
+		fileName:     dl.FileName(),
+		downloadLink: dl.URL(),
 	}
 
 	_ = cl.gp.Submit(t.runTask)
-	logs.Info("task submitted, download link: %s", downloadLink)
+	logs.Info("task submitted, download link: %s", dl.URL())
 	cl.addOne()
 }
 

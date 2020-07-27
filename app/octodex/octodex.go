@@ -1,7 +1,13 @@
 package octodex
 
 import (
+	"fmt"
 	"net/http"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/jdxj/wallpaper/models"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/astaxie/beego/logs"
@@ -33,7 +39,7 @@ func (oDLI *OctodexDLI) HasNext() bool {
 	return oDLI.hasNext
 }
 
-func (oDLI *OctodexDLI) Next() []string {
+func (oDLI *OctodexDLI) Next() []models.DownloadLink {
 	c := oDLI.c
 	resp, err := c.Get(mainPage)
 	if err != nil {
@@ -48,7 +54,7 @@ func (oDLI *OctodexDLI) Next() []string {
 		return nil
 	}
 
-	downloadURLs := make([]string, 0, 200)
+	downloadURLs := make([]models.DownloadLink, 0, 200)
 	sel := doc.Find(".width-fit")
 	sel.Each(func(i int, selI *goquery.Selection) {
 		// src 的格式为: "/images/Octoqueer.png"
@@ -57,8 +63,28 @@ func (oDLI *OctodexDLI) Next() []string {
 			return
 		}
 		url := downloadPrefix + src
-		downloadURLs = append(downloadURLs, url)
+		dl := &octodexDL{
+			downloadLink: url,
+		}
+		downloadURLs = append(downloadURLs, dl)
 	})
 	oDLI.hasNext = false
 	return downloadURLs
+}
+
+type octodexDL struct {
+	downloadLink string
+}
+
+func (od *octodexDL) URL() string {
+	return od.downloadLink
+}
+
+func (od *octodexDL) FileName() string {
+	suffix := filepath.Base(od.downloadLink)
+	idx := strings.LastIndex(suffix, ".")
+	if idx < 0 {
+		return fmt.Sprintf("octodex_%d", time.Now().UnixNano())
+	}
+	return suffix[:idx]
 }

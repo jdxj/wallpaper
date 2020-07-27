@@ -8,7 +8,7 @@ import (
 
 func TestNewWallhavenDLI(t *testing.T) {
 	flags := &Flags{
-		CommonFlags: models.CommonFlags{
+		CommonFlags: &models.CommonFlags{
 			SavePath:   "data",
 			Retry:      3,
 			Concurrent: 1,

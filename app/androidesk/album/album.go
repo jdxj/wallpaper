@@ -3,6 +3,9 @@ package album
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
+
+	"github.com/jdxj/wallpaper/models"
 
 	"github.com/jdxj/wallpaper/app/androidesk"
 
@@ -50,7 +53,7 @@ func (ad *AlbumDLI) HasNext() bool {
 	return ad.amount >= AlbumLimit
 }
 
-func (ad *AlbumDLI) Next() []string {
+func (ad *AlbumDLI) Next() []models.DownloadLink {
 	ad.curPage++
 	qu := ad.getQueryURL(ad.curPage)
 	dls, err := ad.parseDownloadLinks(qu)
@@ -71,7 +74,7 @@ func (ad *AlbumDLI) pageToSkip(page int) int {
 	return page * AlbumLimit
 }
 
-func (ad *AlbumDLI) parseDownloadLinks(qu string) ([]string, error) {
+func (ad *AlbumDLI) parseDownloadLinks(qu string) ([]models.DownloadLink, error) {
 	resp, err := ad.c.Do(newReq(qu))
 	if err != nil {
 		return nil, err
@@ -88,9 +91,12 @@ func (ad *AlbumDLI) parseDownloadLinks(qu string) ([]string, error) {
 	}
 
 	ad.amount = len(w.Data)
-	downloadLinks := make([]string, 0, ad.amount)
+	downloadLinks := make([]models.DownloadLink, 0, ad.amount)
 	for _, ww := range w.Data {
-		downloadLinks = append(downloadLinks, ww.Img)
+		dl := &albumDL{
+			downloadLink: ww.Img,
+		}
+		downloadLinks = append(downloadLinks, dl)
 	}
 	if len(downloadLinks) == 0 {
 		logs.Warn("not get download links, query url: %s", qu)
@@ -103,4 +109,16 @@ func newReq(qu string) *http.Request {
 	req.Header.Set("Host", Host)
 	req.Header.Set("User-Agent", UserAgent)
 	return req
+}
+
+type albumDL struct {
+	downloadLink string
+}
+
+func (al *albumDL) URL() string {
+	return al.downloadLink
+}
+
+func (al *albumDL) FileName() string {
+	return filepath.Base(al.downloadLink)
 }

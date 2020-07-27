@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jdxj/wallpaper/models"
+
 	"github.com/astaxie/beego/logs"
 )
 
@@ -39,7 +41,7 @@ func (wd *WallhavenDLI) HasNext() bool {
 	return wd.currPage <= wd.lastPage
 }
 
-func (wd *WallhavenDLI) Next() []string {
+func (wd *WallhavenDLI) Next() []models.DownloadLink {
 	wd.currPage++
 	dls, err := wd.parseDownloadLinks(wd.currPage)
 	if err != nil {
@@ -59,7 +61,7 @@ func (wd *WallhavenDLI) getQueryURL(page int) string {
 	return query
 }
 
-func (wd *WallhavenDLI) parseDownloadLinks(page int) ([]string, error) {
+func (wd *WallhavenDLI) parseDownloadLinks(page int) ([]models.DownloadLink, error) {
 	qu := wd.getQueryURL(page)
 	resp, err := wd.c.Get(qu)
 	if err != nil {
@@ -74,13 +76,36 @@ func (wd *WallhavenDLI) parseDownloadLinks(page int) ([]string, error) {
 	}
 
 	images := respJson.Images
-	downloadLinks := make([]string, 0, len(images))
+	downloadLinks := make([]models.DownloadLink, 0, len(images))
 	for _, image := range images {
-		downloadLinks = append(downloadLinks, image.Path)
+		dl := &whDL{
+			downloadLink: image.Path,
+			id:           image.ID,
+			purity:       image.Purity,
+			category:     image.Category,
+		}
+		downloadLinks = append(downloadLinks, dl)
 	}
 
 	// 更新状态
 	meta := respJson.Meta
 	wd.lastPage = meta.LastPage
 	return downloadLinks, nil
+}
+
+type whDL struct {
+	downloadLink string
+
+	id       string
+	purity   string
+	category string
+}
+
+func (wd *whDL) URL() string {
+	return wd.downloadLink
+}
+
+func (wd *whDL) FileName() string {
+	return fmt.Sprintf("%s_%s_%s",
+		wd.id, wd.purity, wd.category)
 }
