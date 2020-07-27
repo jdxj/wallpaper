@@ -20,13 +20,6 @@ var (
 		},
 	}
 
-	headPool = sync.Pool{
-		New: func() interface{} {
-			buf := make([]byte, 512)
-			return &buf
-		},
-	}
-
 	// 停止信号
 	Stop = make(chan int)
 )
@@ -36,18 +29,15 @@ var (
 func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 	defer r.Close()
 
-	headBuf := headPool.Get().(*[]byte)
-	defer headPool.Put(headBuf)
-
 	bufR := bufferPool.Get().(*bufio.Reader)
 	defer bufferPool.Put(bufR)
 
 	bufR.Reset(r)
-	if _, err := bufR.Read(*headBuf); err != nil {
+	head, err := bufR.Peek(512)
+	if err != nil {
 		return err
 	}
-	ext := GetFileExtension(*headBuf)
-	fileName = fileName + ext
+	fileName += GetFileExtension(head)
 
 	if err := os.MkdirAll(path, os.ModePerm); err != nil {
 		return err
@@ -58,10 +48,8 @@ func WriteFromReadCloser(path, fileName string, r io.ReadCloser) error {
 		return err
 	}
 	defer file.Close()
+	defer file.Sync()
 
-	if _, err := file.Write(*headBuf); err != nil {
-		return err
-	}
 	_, err = bufR.WriteTo(file)
 	return err
 }
