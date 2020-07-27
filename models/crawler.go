@@ -12,7 +12,7 @@ import (
 )
 
 func NewCrawler(flags *CommonFlags, dli DownloadLinkIterator) *Crawler {
-	c := client.New()
+	c := client.New(flags.Timeout)
 	dli.SetClient(c)
 	gp, _ := ants.NewPool(flags.Concurrent)
 	mutex := &sync.Mutex{}

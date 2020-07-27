@@ -48,7 +48,7 @@ func init() {
 	// wallhavenCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	wallhavenCmd.Flags().StringVarP(&walFlags.UserName, "userName", "u", "", "set user name")
-	wallhavenCmd.Flags().StringVarP(&walFlags.CollectionID, "collectionID", "i", "", "set collection id")
+	wallhavenCmd.Flags().StringVarP(&walFlags.CollectionID, "collectionID", "n", "", "set collection id")
 	wallhavenCmd.Flags().StringVarP(&walFlags.APIKey, "apiKey", "k", "", "set api key")
 	wallhavenCmd.Flags().IntVarP(&walFlags.Limit, "limit", "l", 0, "specify the number of download pages")
 }

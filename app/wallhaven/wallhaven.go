@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/jdxj/wallpaper/models"
 
@@ -16,7 +17,8 @@ const (
 
 func NewWallhavenDLI(flags *Flags) *WallhavenDLI {
 	c := &WallhavenDLI{
-		flags: flags,
+		flags:  flags,
+		ticker: time.NewTicker(1500 * time.Millisecond),
 	}
 	return c
 }
@@ -27,21 +29,36 @@ type WallhavenDLI struct {
 
 	currPage int
 	lastPage int
+
+	// wallhaven 的 api 有访问限制,
+	// 但是下载图片的链接没有限制.
+	ticker *time.Ticker
 }
 
 func (wd *WallhavenDLI) SetClient(c *http.Client) {
 	wd.c = c
 }
 
-func (wd *WallhavenDLI) HasNext() bool {
+func (wd *WallhavenDLI) HasNext() (has bool) {
+	defer func() {
+		if !has {
+			wd.ticker.Stop()
+		}
+	}()
+
 	limit := wd.flags.Limit
 	if limit > 0 { // 只下载前几页
-		return wd.currPage <= limit
+		return wd.currPage < limit
 	}
-	return wd.currPage <= wd.lastPage
+	return wd.currPage < wd.lastPage
 }
 
 func (wd *WallhavenDLI) Next() []models.DownloadLink {
+	// 避免过快的访问
+	select {
+	case <-wd.ticker.C:
+	}
+
 	wd.currPage++
 	dls, err := wd.parseDownloadLinks(wd.currPage)
 	if err != nil {

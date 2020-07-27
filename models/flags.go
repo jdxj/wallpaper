@@ -4,4 +4,5 @@ type CommonFlags struct {
 	SavePath   string
 	Retry      int
 	Concurrent int
+	Timeout    int
 }

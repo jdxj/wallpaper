@@ -1,6 +1,7 @@
 package wallhaven
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/jdxj/wallpaper/models"
@@ -19,4 +20,18 @@ func TestNewWallhavenDLI(t *testing.T) {
 		Limit:        1,
 	}
 	Run(flags)
+}
+
+func abc() (has bool) {
+	defer func() {
+		fmt.Printf("%t\n", has)
+		has = false
+	}()
+
+	return true
+}
+
+func TestModifyReturnValue(t *testing.T) {
+	res := abc()
+	fmt.Printf("%t\n", res)
 }
