@@ -29,11 +29,15 @@ func NewCrawler(flags *CommonFlags, dli DownloadLinkIterator) *Crawler {
 	return cl
 }
 
+// Crawler 主要负责执行 task.runTask().
+// 其核心部分是并发执行, 该功能交给 ants.Pool,
+// 另外 Crawler 负责任务统计, 决定何时退出程序.
 type Crawler struct {
 	c     *http.Client
 	gp    *ants.Pool
 	flags *CommonFlags
 
+	// 利用条件锁对程序进行阻塞, 直到所有任务完成才退出.
 	mutex      *sync.Mutex
 	cond       *sync.Cond
 	unfinished int // 未完成的任务数
@@ -41,6 +45,9 @@ type Crawler struct {
 	dli DownloadLinkIterator
 }
 
+// Run 的执行步骤是:
+//   1. 利用 DownloadLinkIterator 不断获取下载链接, 注意这里不需要并发执行.
+//   2. 将下载任务提交, 任务成功提交后将会由 ants.Pool 并发执行.
 func (cl *Crawler) Run() {
 	dli := cl.dli
 	for dli.HasNext() {

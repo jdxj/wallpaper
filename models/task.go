@@ -15,6 +15,8 @@ var (
 	ErrContentTypeNotFound = errors.New("Content-Type not found")
 )
 
+// task 描述了下载图片的任务.
+// 如果想要下载其它类型的文件, 需要对其进行抽象.
 type task struct {
 	cl *Crawler
 
@@ -22,15 +24,18 @@ type task struct {
 	downloadLink string
 }
 
+// runTask 是整个任务的完整封装,
+// 包括: 下载重试, 任务完成通知.
 func (t *task) runTask() {
 	// 对于提交成功的任务, 不管下载成功还是失败,
 	// 下载结束后都要调用 subOne().
 	defer t.cl.subOne()
 
-	// 自动重试
+	// 自动重试是个简化的模型, 如果在初始化 retry 时为0,
+	// 那么该任务一次也不会执行, 直接返回任务失败.
 	retry := t.cl.flags.Retry
 	for i := 0; i < retry; i++ {
-		// 这里是个耗时操作, 提前拦截
+		// 这里是个耗时操作, 提前拦截.
 		select {
 		case <-utils.Stop:
 			logs.Info("stop runTask, download link: %s",
@@ -56,6 +61,7 @@ func (t *task) runTask() {
 	logs.Error("task failed, download link: %s", t.downloadLink)
 }
 
+// download 是具体的下载逻辑.
 func (t *task) download() error {
 	c := t.cl.c
 	savePath := t.cl.flags.SavePath
