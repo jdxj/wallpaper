@@ -13,41 +13,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
+package androidesk
 
 import (
-	"github.com/jdxj/wallpaper/app/poco/user"
+	"github.com/jdxj/wallpaper/app/androidesk/album"
+	"github.com/jdxj/wallpaper/cmd"
 
 	"github.com/spf13/cobra"
 )
 
-// userCmd represents the user command
-var userCmd = &cobra.Command{
-	Use:   "user",
-	Short: "A brief description of your command",
+// albumCmd represents the album command
+var albumCmd = &cobra.Command{
+	Use:   "album",
+	Short: "download androidesk album",
 	Run: func(cmd *cobra.Command, args []string) {
-		info := user.NewInfo(userFlags)
-		info.Query()
+		album.Run(albumFlags)
 	},
 }
 
-var (
-	userFlags = &user.Flags{}
-)
+var albumFlags = &album.Flags{
+	CommonFlags: cmd.CommFlags,
+}
 
 func init() {
-	pocoCmd.AddCommand(userCmd)
+	androideskCmd.AddCommand(albumCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// userCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// albumCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// userCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// albumCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	userCmd.Flags().StringVarP(&userFlags.ID, "id", "n", "", "visited user id")
-	userCmd.Flags().BoolVarP(&userFlags.Identity, "identity", "i", true, "user identity info")
+	albumCmd.Flags().StringVarP(&albumFlags.ID, "id", "n", "5d834a6fe7bce73981fabf4c", "album id. the default value is only for testing")
+	albumCmd.Flags().IntVarP(&albumFlags.Limit, "limit", "l", 0, "specify the number of download pages")
+	albumCmd.Flags().BoolVarP(&albumFlags.Adult, "adult", "a", false, "may not have adult content")
+	albumCmd.Flags().StringVarP(&albumFlags.Order, "order", "o", album.New, "specify collation")
 }

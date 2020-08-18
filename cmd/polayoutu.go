@@ -31,11 +31,11 @@ var polayoutuCmd = &cobra.Command{
 }
 
 var polFlags = &polayoutu.Flags{
-	CommonFlags: commFlags,
+	CommonFlags: CommFlags,
 }
 
 func init() {
-	rootCmd.AddCommand(polayoutuCmd)
+	RootCmd.AddCommand(polayoutuCmd)
 
 	// Here you will define your flags and configuration settings.
 

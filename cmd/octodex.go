@@ -31,11 +31,11 @@ var octodexCmd = &cobra.Command{
 }
 
 var octFlags = &octodex.Flags{
-	CommonFlags: commFlags,
+	CommonFlags: CommFlags,
 }
 
 func init() {
-	rootCmd.AddCommand(octodexCmd)
+	RootCmd.AddCommand(octodexCmd)
 
 	// Here you will define your flags and configuration settings.
 

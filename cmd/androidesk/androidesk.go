@@ -13,41 +13,41 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
+package androidesk
 
 import (
-	"github.com/jdxj/wallpaper/app/poco/search"
+	"fmt"
+
+	"github.com/jdxj/wallpaper/cmd"
 
 	"github.com/spf13/cobra"
 )
 
-// searchCmd represents the search command
-var searchCmd = &cobra.Command{
-	Use:   "search",
-	Short: "search such as user/tag/article",
+// androideskCmd represents the androidesk command
+var androideskCmd = &cobra.Command{
+	Use:   "androidesk",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		sea := search.NewSearch(searchFlags)
-		sea.Query()
+		fmt.Println("androidesk called")
 	},
 }
 
-var (
-	searchFlags = &search.Flags{}
-)
-
 func init() {
-	pocoCmd.AddCommand(searchCmd)
+	cmd.RootCmd.AddCommand(androideskCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// searchCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// androideskCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// searchCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	searchCmd.Flags().StringVarP(&searchFlags.Type, "type", "t", search.User, "search type. [user|tag|article|works]")
-	searchCmd.Flags().StringVarP(&searchFlags.Keyword, "keyword", "k", "", "search info")
+	// androideskCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

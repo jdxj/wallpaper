@@ -2,22 +2,23 @@ package cmd
 
 import (
 	"github.com/jdxj/wallpaper/models"
+
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use: "wallpaper",
 }
 
-var commFlags = &models.CommonFlags{}
+var CommFlags = &models.CommonFlags{}
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&commFlags.SavePath, "path", "data", "set save path")
-	rootCmd.PersistentFlags().IntVar(&commFlags.Concurrent, "concurrent", 10, "set goroutine pool size")
-	rootCmd.PersistentFlags().IntVar(&commFlags.Retry, "retry", 3, "set retry times")
-	rootCmd.PersistentFlags().IntVar(&commFlags.Timeout, "timeout", 30, "client read http body timeout")
+	RootCmd.PersistentFlags().StringVar(&CommFlags.SavePath, "path", "data", "set save path")
+	RootCmd.PersistentFlags().IntVar(&CommFlags.Concurrent, "concurrent", 10, "set goroutine pool size")
+	RootCmd.PersistentFlags().IntVar(&CommFlags.Retry, "retry", 3, "set retry times")
+	RootCmd.PersistentFlags().IntVar(&CommFlags.Timeout, "timeout", 30, "client read http body timeout")
 }
 
 func Execute() error {
-	return rootCmd.Execute()
+	return RootCmd.Execute()
 }

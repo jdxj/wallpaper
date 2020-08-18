@@ -13,40 +13,41 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
+package poco
 
 import (
-	"github.com/jdxj/wallpaper/app/poco"
+	"github.com/jdxj/wallpaper/app/poco/search"
 
 	"github.com/spf13/cobra"
 )
 
-// pocoCmd represents the poco command
-var pocoCmd = &cobra.Command{
-	Use:   "poco",
-	Short: "poco",
+// searchCmd represents the search command
+var searchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "search such as user/tag/article",
 	Run: func(cmd *cobra.Command, args []string) {
-		poco.Run(pocoFlags)
+		sea := search.NewSearch(searchFlags)
+		sea.Query()
 	},
 }
 
-var pocoFlags = &poco.Flags{
-	CommonFlags: commFlags,
-}
+var (
+	searchFlags = &search.Flags{}
+)
 
 func init() {
-	rootCmd.AddCommand(pocoCmd)
+	pocoCmd.AddCommand(searchCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// pocoCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// searchCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// pocoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// searchCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	pocoCmd.Flags().StringVarP(&pocoFlags.UserID, "userID", "u", "", "specify user id")
-	pocoCmd.Flags().IntVarP(&pocoFlags.WorkID, "workID", "w", 0, "specify work id")
+	searchCmd.Flags().StringVarP(&searchFlags.Type, "type", "t", search.User, "search type. [user|tag|article|works]")
+	searchCmd.Flags().StringVarP(&searchFlags.Keyword, "keyword", "k", "", "search info")
 }

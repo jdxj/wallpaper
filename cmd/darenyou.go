@@ -31,11 +31,11 @@ var darenyouCmd = &cobra.Command{
 }
 
 var dryFlags = &darenyou.Flags{
-	CommonFlags: commFlags,
+	CommonFlags: CommFlags,
 }
 
 func init() {
-	rootCmd.AddCommand(darenyouCmd)
+	RootCmd.AddCommand(darenyouCmd)
 
 	// Here you will define your flags and configuration settings.
 

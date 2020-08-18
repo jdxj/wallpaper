@@ -31,11 +31,11 @@ var wallhavenCmd = &cobra.Command{
 }
 
 var walFlags = &wallhaven.Flags{
-	CommonFlags: commFlags,
+	CommonFlags: CommFlags,
 }
 
 func init() {
-	rootCmd.AddCommand(wallhavenCmd)
+	RootCmd.AddCommand(wallhavenCmd)
 
 	// Here you will define your flags and configuration settings.
 
