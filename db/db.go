@@ -17,16 +17,15 @@ var (
 )
 
 func init() {
-	openDB()
-}
-
-func openDB() {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		panic(err)
 	}
 	sqliteDB = db
-	logs.Info("open database success")
+}
+
+func Get() *sql.DB {
+	return sqliteDB
 }
 
 func Close() {
